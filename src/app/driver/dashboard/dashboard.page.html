@@ -1,0 +1,154 @@
+
+<ion-content class="ion-padding">
+  <!--<ion-header>
+    <ion-toolbar>
+      <ion-title>Dashboard Chofer</ion-title>
+     
+    </ion-toolbar>
+  </ion-header>
+-->
+  <div class="ion-padding">
+    <ion-title>Dashboard Chofer</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="logout()">
+        <ion-icon name="log-out-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons> 
+  </div>
+  
+  <div class="welcome-section">
+    <h1>¡Hola, {{ currentUser?.name }}!</h1>
+    <p>Gestiona tu autobús y actualiza tu ubicación en Guayaquil</p>
+  </div>
+
+  <div class="bus-status" *ngIf="currentBus">
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Autobús {{ currentBus.number }}</ion-card-title>
+        <ion-card-subtitle>Ruta: {{ getRouteName(currentBus.routeId) }}</ion-card-subtitle>
+      </ion-card-header>
+      
+      <ion-card-content>
+        <div class="bus-info">
+          <div class="status-indicator">
+            <ion-badge [color]="currentBus.isActive ? 'success' : 'danger'">
+              {{ currentBus.isActive ? 'Activo' : 'Inactivo' }}
+            </ion-badge>
+          </div>
+          
+          <div class="bus-stats">
+            <div class="stat-item">
+              <ion-icon name="people-outline"></ion-icon>
+              <span>{{ currentBus.currentPassengers }}/{{ currentBus.capacity }}</span>
+            </div>
+            <div class="stat-item">
+              <ion-icon name="time-outline"></ion-icon>
+              <span>{{ currentBus.lastUpdate | date:'short' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="location-info" *ngIf="currentLocation">
+          <h4>Ubicación Actual</h4>
+          <p>Lat: {{ currentLocation.latitude | number:'1.6-6' }}</p>
+          <p>Lng: {{ currentLocation.longitude | number:'1.6-6' }}</p>
+          <p>Precisión: {{ currentLocation.accuracy | number:'1.0-0' }}m</p>
+        </div>
+
+        <div class="bus-actions">
+          <ion-button 
+            [color]="currentBus.isActive ? 'danger' : 'success'"
+            (click)="toggleBusStatus()"
+            [disabled]="isUpdating">
+            <ion-icon [name]="currentBus.isActive ? 'stop-outline' : 'play-outline'"></ion-icon>
+            {{ currentBus.isActive ? 'Detener Servicio' : 'Iniciar Servicio' }}
+          </ion-button>
+          
+          <ion-button 
+            fill="outline"
+            (click)="updateLocation()"
+            [disabled]="isUpdatingLocation">
+            <ion-spinner *ngIf="isUpdatingLocation" name="crescent"></ion-spinner>
+            <ion-icon *ngIf="!isUpdatingLocation" name="refresh-outline"></ion-icon>
+            Actualizar Ubicación
+          </ion-button>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <div class="register-bus" *ngIf="!currentBus">
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Registrar Autobús</ion-card-title>
+        <ion-card-subtitle>Registra tu autobús para comenzar el servicio</ion-card-subtitle>
+      </ion-card-header>
+      
+      <ion-card-content>
+        <form [formGroup]="busForm" (ngSubmit)="registerBus()">
+          <ion-item>
+            <ion-label position="stacked">Número del Autobús</ion-label>
+            <ion-input 
+              formControlName="number"
+              placeholder="Ej: A-101">
+            </ion-input>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">Ruta</ion-label>
+            <ion-select formControlName="routeId" placeholder="Selecciona una ruta">
+              <ion-select-option *ngFor="let route of routes" [value]="route.id">
+                {{ route.name }}
+              </ion-select-option>
+            </ion-select>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">Capacidad</ion-label>
+            <ion-input 
+              type="number"
+              formControlName="capacity"
+              placeholder="50">
+            </ion-input>
+          </ion-item>
+
+          <ion-button 
+            expand="block" 
+            type="submit"
+            [disabled]="busForm.invalid || isRegistering"
+            class="ion-margin-top">
+            <ion-spinner *ngIf="isRegistering" name="crescent"></ion-spinner>
+            <span *ngIf="!isRegistering">Registrar Autobús</span>
+          </ion-button>
+        </form>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <div class="route-stops" *ngIf="currentBus && currentRoute">
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Paradas de la Ruta</ion-card-title>
+        <ion-card-subtitle>{{ currentRoute.name }}</ion-card-subtitle>
+      </ion-card-header>
+      
+      <ion-card-content>
+        <ion-list>
+          <ion-item *ngFor="let stop of currentRoute.stops; let i = index">
+            <ion-label>
+              <h2>{{ i + 1 }}. {{ stop.name }}</h2>
+              <p>{{ stop.description }}</p>
+            </ion-label>
+            <ion-button 
+              slot="end" 
+              fill="clear" 
+              size="small"
+              (click)="markStopArrival(stop)">
+              <ion-icon name="checkmark-outline"></ion-icon>
+            </ion-button>
+          </ion-item>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</ion-content>

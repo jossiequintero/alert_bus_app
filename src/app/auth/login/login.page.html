@@ -1,0 +1,104 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>
+      AlertBus - Iniciar Sesión
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  <div class="login-container">
+    <div class="logo-section">
+      <ion-icon name="bus" size="large" color="primary"></ion-icon>
+      <h1>AlertBus</h1>
+      <p>Recibe alertas cuando tu autobús esté cerca</p>
+    </div>
+
+    <form [formGroup]="loginForm" (ngSubmit)="onLogin()">
+      <ion-item>
+        <ion-label position="stacked">Correo electrónico</ion-label>
+        <ion-input 
+          type="email" 
+          formControlName="email"
+          placeholder="tu@email.com">
+        </ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="stacked">Contraseña</ion-label>
+        <ion-input 
+          type="password" 
+          formControlName="password"
+          placeholder="••••••••">
+        </ion-input>
+      </ion-item>
+      <ion-item *ngIf="!isLoginMode">
+        <ion-label position="stacked">Confirmar Contraseña</ion-label>
+        <ion-input 
+          type="password" 
+          formControlName="confirmPassword"
+          placeholder="••••••••">
+        </ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="stacked">Tipo de usuario</ion-label>
+        <ion-select formControlName="role" placeholder="Selecciona tu rol">
+          <ion-select-option value="pasajero">Pasajero</ion-select-option>
+          <ion-select-option value="chofer">Chofer</ion-select-option>
+          <ion-select-option value="admin">Administrador</ion-select-option>
+        </ion-select>
+      </ion-item>
+
+      <ion-button 
+        *ngIf="isLoginMode"
+        expand="block"
+        type="submit"
+        [disabled]="loginForm.invalid || isLoading"
+        class="ion-margin-top">
+        <ion-spinner *ngIf="isLoading" name="crescent"></ion-spinner>
+        <span *ngIf="!isLoading">Iniciar Sesión</span>
+      </ion-button>
+
+      <ion-button
+        *ngIf="!isLoginMode"
+        expand="block"
+        type="button"
+        (click)="onRegister()"
+        [disabled]="loginForm.invalid || isLoading"
+        class="ion-margin-top">
+        <ion-spinner *ngIf="isLoading" name="crescent"></ion-spinner>
+        <span *ngIf="!isLoading">Registrarse</span>
+      </ion-button>
+      <!-- <ion-button 
+        expand="block" 
+        type="submit" 
+        routerLink="/prueba"
+        class="ion-margin-top">
+        
+        <span>Prueba</span>
+      </ion-button> -->
+    </form>
+
+    <div class="register-section">
+      <p>{{ isLoginMode ? '¿No tienes cuenta?' : '¿Ya tienes una cuenta?' }}</p>
+      <ion-button 
+        fill="clear" 
+        (click)="toggleMode()"
+        [disabled]="isLoading">
+        {{ isLoginMode ? 'Registrarse' : 'Iniciar Sesión' }}
+      </ion-button>
+    </div>
+
+    <!-- <ion-button 
+      *ngIf="!isLoginMode"
+      expand="block" 
+      fill="outline"
+      (click)="onRegister()"
+      [disabled]="loginForm.invalid || isLoading"
+      class="ion-margin-top">
+      <ion-spinner *ngIf="isLoading" name="crescent"></ion-spinner>
+      <span *ngIf="!isLoading">Registrarse</span>
+    </ion-button> -->
+  </div>
+</ion-content>

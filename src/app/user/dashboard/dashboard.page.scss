@@ -1,0 +1,103 @@
+.welcome-section {
+  text-align: center;
+  margin-bottom: 30px;
+  
+  h1 {
+    color: var(--ion-color-primary);
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 8px;
+  }
+  
+  p {
+    color: var(--ion-color-medium);
+    font-size: 1rem;
+    margin: 0;
+  }
+}
+
+.feature-card {
+  cursor: pointer;
+  transition: transform 0.2s ease;
+  height: 100%;
+  
+  &:hover {
+    transform: translateY(-2px);
+  }
+  
+  .card-content {
+    text-align: center;
+    padding: 20px;
+    
+    ion-icon {
+      font-size: 3rem;
+      margin-bottom: 16px;
+    }
+    
+    h3 {
+      color: var(--ion-color-dark);
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    
+    p {
+      color: var(--ion-color-medium);
+      font-size: 0.9rem;
+      margin: 0;
+    }
+  }
+}
+
+.location-section {
+  margin: 20px 0;
+  
+  ion-card-content {
+    p {
+      margin: 8px 0;
+      color: var(--ion-color-dark);
+    }
+  }
+}
+
+.nearby-buses {
+  margin-top: 30px;
+  
+  h2 {
+    color: var(--ion-color-primary);
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 16px;
+  }
+  
+  .bus-info {
+    .bus-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      
+      h3 {
+        color: var(--ion-color-primary);
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin: 0;
+      }
+    }
+    
+    p {
+      margin: 4px 0;
+      color: var(--ion-color-dark);
+      font-size: 0.9rem;
+    }
+  }
+}
+
+ion-badge {
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+ion-spinner {
+  margin-right: 8px;
+}

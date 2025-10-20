@@ -1,0 +1,131 @@
+.welcome-section {
+  text-align: center;
+  margin-bottom: 30px;
+  
+  h1 {
+    color: var(--ion-color-primary);
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 8px;
+  }
+  
+  p {
+    color: var(--ion-color-medium);
+    font-size: 1rem;
+    margin: 0;
+  }
+}
+
+.bus-status {
+  margin-bottom: 30px;
+  
+  .bus-info {
+    .status-indicator {
+      margin-bottom: 16px;
+    }
+    
+    .bus-stats {
+      display: flex;
+      justify-content: space-around;
+      margin-bottom: 20px;
+      
+      .stat-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        
+        ion-icon {
+          color: var(--ion-color-primary);
+        }
+        
+        span {
+          color: var(--ion-color-dark);
+          font-weight: 600;
+        }
+      }
+    }
+  }
+  
+  .location-info {
+    margin-bottom: 20px;
+    
+    h4 {
+      color: var(--ion-color-primary);
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    
+    p {
+      color: var(--ion-color-dark);
+      font-size: 0.9rem;
+      margin: 4px 0;
+    }
+  }
+  
+  .bus-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    
+    ion-button {
+      --border-radius: 8px;
+      height: 48px;
+      font-weight: 600;
+    }
+  }
+}
+
+.register-bus {
+  margin-bottom: 30px;
+  
+  ion-item {
+    margin-bottom: 16px;
+    --border-radius: 8px;
+    --background: var(--ion-color-light);
+  }
+  
+  ion-button {
+    --border-radius: 8px;
+    height: 48px;
+    font-weight: 600;
+  }
+}
+
+.route-stops {
+  h3 {
+    color: var(--ion-color-primary);
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-bottom: 16px;
+  }
+  
+  ion-item {
+    margin-bottom: 8px;
+    --border-radius: 8px;
+    
+    ion-label {
+      h2 {
+        color: var(--ion-color-dark);
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 4px;
+      }
+      
+      p {
+        color: var(--ion-color-medium);
+        font-size: 0.9rem;
+        margin: 2px 0;
+      }
+    }
+  }
+}
+
+ion-badge {
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+ion-spinner {
+  margin-right: 8px;
+}

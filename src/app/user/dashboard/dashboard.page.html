@@ -1,0 +1,85 @@
+<!----
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Dashboard Usuario - Guayaquil</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="logout()">
+        <ion-icon name="log-out-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+-->
+<ion-content class="ion-padding">
+  <div class="welcome-section">
+    <h1>¡Hola, {{ currentUser?.name }}!</h1>
+    <p>Recibe alertas cuando tu autobús esté cerca en Guayaquil</p>
+  </div>
+
+  <ion-grid>
+    <ion-row>
+      <ion-col size="12" size-md="6">
+        <ion-card (click)="navigateToRoutes()" class="feature-card">
+          <ion-card-content>
+            <div class="card-content">
+              <ion-icon name="map-outline" color="primary"></ion-icon>
+              <h3>Ver Rutas</h3>
+              <p>Explora las rutas disponibles y sus paradas</p>
+            </div>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+
+      <ion-col size="12" size-md="6">
+        <ion-card (click)="navigateToAlerts()" class="feature-card">
+          <ion-card-content>
+            <div class="card-content">
+              <ion-icon name="notifications-outline" color="warning"></ion-icon>
+              <h3>Mis Alertas</h3>
+              <p>Gestiona tus alertas y configuraciones</p>
+            </div>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+
+  <div class="location-section" *ngIf="currentLocation">
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Tu Ubicación Actual</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <p>Latitud: {{ currentLocation.latitude | number:'1.6-6' }}</p>
+        <p>Longitud: {{ currentLocation.longitude | number:'1.6-6' }}</p>
+        <p>Precisión: {{ currentLocation.accuracy | number:'1.0-0' }}m</p>
+        <ion-button 
+          fill="outline" 
+          size="small" 
+          (click)="updateLocation()"
+          [disabled]="isUpdatingLocation">
+          <ion-spinner *ngIf="isUpdatingLocation" name="crescent"></ion-spinner>
+          <ion-icon *ngIf="!isUpdatingLocation" name="refresh-outline"></ion-icon>
+          Actualizar Ubicación
+        </ion-button>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <div class="nearby-buses" *ngIf="nearbyBuses.length > 0">
+    <h2>Autobuses Cercanos</h2>
+    <ion-card *ngFor="let bus of nearbyBuses">
+      <ion-card-content>
+        <div class="bus-info">
+          <div class="bus-header">
+            <h3>Autobús {{ bus.number }}</h3>
+            <ion-badge color="success">{{ bus.distance | number:'1.0-0' }}m</ion-badge>
+          </div>
+          <p>Ruta: {{ getRouteName(bus.routeId) }}</p>
+          <p>Pasajeros: {{ bus.currentPassengers }}/{{ bus.capacity }}</p>
+          <p>Última actualización: {{ bus.lastUpdate | date:'short' }}</p>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</ion-content>

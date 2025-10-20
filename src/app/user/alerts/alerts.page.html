@@ -1,0 +1,114 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/user/dashboard"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Mis Alertas - Guayaquil</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div class="alerts-header">
+    <h1>Configuración de Alertas</h1>
+    <p>Gestiona tus alertas y configuraciones de notificaciones en Guayaquil</p>
+  </div>
+
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>Configuración de Alertas</ion-card-title>
+    </ion-card-header>
+    
+    <ion-card-content>
+      <ion-item>
+        <ion-label>Alertas Habilitadas</ion-label>
+        <ion-toggle 
+          [(ngModel)]="alertSettings.isEnabled"
+          (ionChange)="updateAlertSettings()">
+        </ion-toggle>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="stacked">Radio de Proximidad (metros)</ion-label>
+        <ion-range 
+          min="100" 
+          max="1000" 
+          step="50"
+          [(ngModel)]="alertSettings.proximityRadius"
+          (ionChange)="updateAlertSettings()">
+          <ion-label slot="start">100m</ion-label>
+          <ion-label slot="end">1000m</ion-label>
+        </ion-range>
+        <ion-label slot="end">{{ alertSettings.proximityRadius }}m</ion-label>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="stacked">Tiempo de Anticipación (minutos)</ion-label>
+        <ion-range 
+          min="1" 
+          max="15" 
+          step="1"
+          [(ngModel)]="alertSettings.advanceTime"
+          (ionChange)="updateAlertSettings()">
+          <ion-label slot="start">1min</ion-label>
+          <ion-label slot="end">15min</ion-label>
+        </ion-range>
+        <ion-label slot="end">{{ alertSettings.advanceTime }}min</ion-label>
+      </ion-item>
+
+      <ion-item>
+        <ion-label>Sonido</ion-label>
+        <ion-toggle 
+          [(ngModel)]="alertSettings.soundEnabled"
+          (ionChange)="updateAlertSettings()">
+        </ion-toggle>
+      </ion-item>
+
+      <ion-item>
+        <ion-label>Vibración</ion-label>
+        <ion-toggle 
+          [(ngModel)]="alertSettings.vibrationEnabled"
+          (ionChange)="updateAlertSettings()">
+        </ion-toggle>
+      </ion-item>
+    </ion-card-content>
+  </ion-card>
+
+  <div class="alerts-list" *ngIf="alerts.length > 0">
+    <h2>Historial de Alertas</h2>
+    <ion-card *ngFor="let alert of alerts">
+      <ion-card-content>
+        <div class="alert-item">
+          <div class="alert-header">
+            <ion-badge [color]="getAlertColor(alert.alertType)">
+              {{ getAlertTypeText(alert.alertType) }}
+            </ion-badge>
+            <span class="alert-time">{{ alert.createdAt | date:'short' }}</span>
+          </div>
+          
+          <p class="alert-message">{{ alert.message }}</p>
+          
+          <div class="alert-actions" *ngIf="!alert.isRead">
+            <ion-button 
+              size="small" 
+              fill="clear"
+              (click)="markAsRead(alert.id)">
+              Marcar como leída
+            </ion-button>
+          </div>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <div class="no-alerts" *ngIf="alerts.length === 0">
+    <ion-card>
+      <ion-card-content>
+        <div class="empty-state">
+          <ion-icon name="notifications-outline" size="large"></ion-icon>
+          <h3>No hay alertas</h3>
+          <p>Las alertas aparecerán aquí cuando recibas notificaciones sobre autobuses cercanos.</p>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</ion-content>

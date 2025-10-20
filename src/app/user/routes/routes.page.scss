@@ -1,0 +1,123 @@
+.routes-header {
+  text-align: center;
+  margin-bottom: 30px;
+  
+  h1 {
+    color: var(--ion-color-primary);
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 8px;
+  }
+  
+  p {
+    color: var(--ion-color-medium);
+    font-size: 1rem;
+    margin: 0;
+  }
+}
+
+.route-card {
+  cursor: pointer;
+  transition: transform 0.2s ease;
+  margin-bottom: 16px;
+  
+  &:hover {
+    transform: translateY(-2px);
+  }
+  
+  .route-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 16px;
+    
+    .route-info {
+      flex: 1;
+      
+      h3 {
+        color: var(--ion-color-primary);
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-bottom: 4px;
+      }
+      
+      p {
+        color: var(--ion-color-medium);
+        font-size: 0.9rem;
+        margin: 0;
+      }
+    }
+    
+    .route-stats {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+  }
+  
+  .route-buses {
+    margin-top: 12px;
+    
+    h4 {
+      color: var(--ion-color-dark);
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    
+    .bus-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+  }
+}
+
+.selected-route {
+  margin-top: 30px;
+  
+  .route-map {
+    margin-bottom: 20px;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  
+  .stops-list {
+    h3 {
+      color: var(--ion-color-primary);
+      font-size: 1.3rem;
+      font-weight: 600;
+      margin-bottom: 16px;
+    }
+    
+    ion-item {
+      margin-bottom: 8px;
+      --border-radius: 8px;
+      
+      ion-label {
+        h2 {
+          color: var(--ion-color-dark);
+          font-size: 1.1rem;
+          font-weight: 600;
+          margin-bottom: 4px;
+        }
+        
+        p {
+          color: var(--ion-color-medium);
+          font-size: 0.9rem;
+          margin: 2px 0;
+        }
+      }
+    }
+  }
+}
+
+ion-badge {
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+ion-chip {
+  --background: var(--ion-color-success);
+  --color: white;
+}
