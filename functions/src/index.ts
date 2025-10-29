@@ -4,7 +4,10 @@ import * as cors from 'cors';
 import * as express from 'express';
 
 // Inicializar Firebase Admin
-admin.initializeApp();
+if (!admin.apps.length) {
+  admin.initializeApp();
+}
+
 
 const app = express();
 app.use(cors({ origin: true }));
@@ -14,6 +17,7 @@ app.use(cors({ origin: true }));
 /**
  * Obtener todas las alertas activas
  */
+/*
 export const getActiveAlerts = functions.https.onRequest((req, res) => {
   const db = admin.firestore();
   
@@ -40,6 +44,7 @@ export const getActiveAlerts = functions.https.onRequest((req, res) => {
 /**
  * Crear una nueva alerta
  */
+/*
 export const createAlert = functions.https.onRequest((req, res) => {
   if (req.method !== 'POST') {
     res.status(405).json({ success: false, error: 'Method not allowed' });
@@ -81,10 +86,11 @@ export const createAlert = functions.https.onRequest((req, res) => {
       res.status(500).json({ success: false, error: error.message });
     });
 });
-
+*/
 /**
  * Actualizar el estado de una alerta
  */
+/*
 export const updateAlertStatus = functions.https.onRequest((req, res) => {
   if (req.method !== 'PUT') {
     res.status(405).json({ success: false, error: 'Method not allowed' });
@@ -115,10 +121,11 @@ export const updateAlertStatus = functions.https.onRequest((req, res) => {
     res.status(500).json({ success: false, error: error.message });
   });
 });
-
+*/
 /**
  * Obtener alertas por línea de bus
  */
+/*
 export const getAlertsByBusLine = functions.https.onRequest((req, res) => {
   const { busLine } = req.query;
 
@@ -152,10 +159,11 @@ export const getAlertsByBusLine = functions.https.onRequest((req, res) => {
       res.status(500).json({ success: false, error: error.message });
     });
 });
-
+*/
 /**
  * Obtener estadísticas de alertas
  */
+/*
 export const getAlertStats = functions.https.onRequest((req, res) => {
   const db = admin.firestore();
   
@@ -189,10 +197,11 @@ export const getAlertStats = functions.https.onRequest((req, res) => {
     res.status(500).json({ success: false, error: error.message });
   });
 });
-
+*/
 /**
  * Función para limpiar alertas antiguas (ejecutar diariamente)
  */
+/*
 export const cleanupOldAlerts = functions.pubsub
   .schedule('0 2 * * *') // Ejecutar a las 2 AM todos los días
   .timeZone('America/Guayaquil')
@@ -214,39 +223,40 @@ export const cleanupOldAlerts = functions.pubsub
     await batch.commit();
     console.log(`Deleted ${oldAlerts.size} old alerts`);
   });
+*/
 
 // ===== FUNCIONES PARA USUARIOS =====
 
 /**
  * Registrar un nuevo usuario
  */
+/*
 export const registerUser = functions.https.onRequest((req, res) => {
   if (req.method !== 'POST') {
     res.status(405).json({ success: false, error: 'Method not allowed' });
     return;
   }
 
-  const { uid, email, name, phone } = req.body;
+  const { user_id, correo, nombre,apellidos, contraseña, rol_id } = req.body;
 
-  if (!uid || !email) {
+  if (!user_id || !nombre || !correo || !contraseña || !rol_id) {
     res.status(400).json({ 
       success: false, 
-      error: 'Missing required fields: uid, email' 
+      error: 'Missing required fields: user_id, nombre, correo, contraseña, rol_id' 
     });
     return;
   }
 
   const db = admin.firestore();
   const userData = {
-    uid,
-    email,
-    name: name || '',
-    phone: phone || '',
-    createdAt: admin.firestore.FieldValue.serverTimestamp(),
-    updatedAt: admin.firestore.FieldValue.serverTimestamp()
+    user_id,
+    correo,
+    nombre: nombre || '',
+    apellidos: apellidos || '',
+    fecha_registro: admin.firestore.FieldValue.serverTimestamp()
   };
 
-  db.collection('users').doc(uid).set(userData)
+  db.collection('usuarios').doc(user_id).set(userData)
     .then(() => {
       res.json({ success: true, data: userData });
     })
@@ -255,11 +265,12 @@ export const registerUser = functions.https.onRequest((req, res) => {
       res.status(500).json({ success: false, error: error.message });
     });
 });
+*/
 
 /**
  * Obtener perfil de usuario
  */
-export const getUserProfile = functions.https.onRequest((req, res) => {
+/*export const getUserProfile = functions.https.onRequest((req, res) => {
   const { uid } = req.query;
 
   if (!uid || typeof uid !== 'string') {
@@ -287,10 +298,16 @@ export const getUserProfile = functions.https.onRequest((req, res) => {
       console.error('Error getting user profile:', error);
       res.status(500).json({ success: false, error: error.message });
     });
-});
+});*/
 
 // Importar funciones específicas de buses
-export * from './busFunctions';
+//export * from './busFunctions';
+//export * from './userFunctions';
+//export * from './userFunctions';
+
+export * from "./user.function";
+//Object.assign(exports, userFunctions);
+
 
 // Exportar la aplicación Express
 export const api = functions.https.onRequest(app);

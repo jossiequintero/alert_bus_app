@@ -75,3 +75,7 @@ android/
 .env
 .env.local
 .editorconfig
+./functions/node_modules
+./functions/lib
+.firebase
+package-lock.json

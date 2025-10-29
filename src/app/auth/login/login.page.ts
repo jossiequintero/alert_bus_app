@@ -25,8 +25,12 @@ export class LoginPage implements OnInit {
     this.loginForm = this.formBuilder.group({
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]],
+      name: ['', Validators.required],
+      lastname: ['', Validators.required],
+
+      confirmPassword: [''],
       role: ['', Validators.required]
-    });
+    }, { validators: this.passwordMatchValidator });
   }
 
   ngOnInit() {
@@ -56,18 +60,26 @@ export class LoginPage implements OnInit {
 
   async onRegister() {
     if (this.loginForm.valid) {
+      
       this.isLoading = true;
-      const { email, password, role } = this.loginForm.value;
-
+      const { email, password, role, name, lastname } = this.loginForm.value;
+      /*
+      const name = this.loginForm.get('name')?.value;
+      const lastname = this.loginForm.get('lastname')?.value;
+*/
       try {
-        const user = await this.authService.register(email, password, email.split('@')[0], role).toPromise();
+        console.log(email, password, name, lastname, role);
+        
+        const user = await this.authService.register(email, password, name, lastname, role).toPromise();
         this.isLoading = false;
         
         await this.showToast(`¡Cuenta creada exitosamente! Bienvenido ${user?.name || 'Usuario'}`, 'success');
         this.redirectBasedOnRole();
       } catch (error) {
         this.isLoading = false;
-        await this.showToast('Error al crear la cuenta', 'danger');
+        console.error('Error en registro:', error);
+        const errorMessage = error instanceof Error ? error.message : 'Error al crear la cuenta';
+        await this.showToast(errorMessage, 'danger');
       }
     }
   }
@@ -77,16 +89,31 @@ export class LoginPage implements OnInit {
   }
 
   private redirectBasedOnRole() {
-    const user = this.authService.getCurrentUser();
+    const user:any = this.authService.getCurrentUser();
     if (user) {
       if (user.role === 'pasajero') {
         this.router.navigate(['/user/dashboard']);
-      } else if (user.role === 'chofer') {
+      } else if (user.role === 'conductor') {
         this.router.navigate(['/driver/dashboard']);
       } else if (user.role === 'admin') {
         this.router.navigate(['/admin/dashboard']);
       }
     }
+  }
+
+  /**
+   * Validador personalizado para verificar que las contraseñas coincidan
+   */
+  private passwordMatchValidator(form: FormGroup) {
+    const password = form.get('password');
+    const confirmPassword = form.get('confirmPassword');
+    
+    if (password && confirmPassword && password.value !== confirmPassword.value) {
+      confirmPassword.setErrors({ passwordMismatch: true });
+      return { passwordMismatch: true };
+    }
+    
+    return null;
   }
 
   private async showToast(message: string, color: string) {

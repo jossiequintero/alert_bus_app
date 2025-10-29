@@ -2,7 +2,8 @@ export interface User {
   id: string;
   email: string;
   name: string;
-  role: string;
+  lastname?: string;
+  roleId: number;
   createdAt: Date;
   deviceToken?: string; // Para notificaciones push
 }

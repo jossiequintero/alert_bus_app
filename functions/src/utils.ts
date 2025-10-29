@@ -1,4 +1,5 @@
 import * as admin from 'firebase-admin';
+import * as functions from 'firebase-functions';
 
 /**
  * Utilidades para las Cloud Functions
@@ -24,12 +25,24 @@ export interface AlertData {
 }
 
 export interface UserData {
-  uid: string;
-  email: string;
-  name: string;
-  phone?: string;
-  createdAt: admin.firestore.Timestamp;
-  updatedAt: admin.firestore.Timestamp;
+  user_id: string;
+  correo: string;
+  nombre: string;
+  apellidos?: string;
+  rol?: RolData;
+  fechaRegistro: admin.firestore.FieldValue | admin.firestore.Timestamp;
+  fechaModificacion?: admin.firestore.FieldValue | admin.firestore.Timestamp;
+}
+
+export enum Rol {
+  PASAJERO = 1,
+  CONDUCTOR = 2,
+  ADMIN = 3
+}
+
+export interface RolData{
+  rol_id: number;
+  descripcion: string;
 }
 
 export interface BusRoute {
@@ -82,14 +95,16 @@ export function validateAlertData(data: any): { isValid: boolean; errors: string
 }
 
 /**
- * Validar datos de usuario
+ * Validar datos de usuario para registro
  */
 export function validateUserData(data: any): { isValid: boolean; errors: string[] } {
   const errors: string[] = [];
   
-  if (!data.uid) errors.push('uid is required');
-  if (!data.email) errors.push('email is required');
-  if (!data.email.includes('@')) errors.push('email must be valid');
+  if (!data.nombre) errors.push('Nombre es requerido');
+  if (!data.correo) errors.push('Correo es requerido');
+  if (!data.correo.includes('@')) errors.push('Correo debe ser válido');
+  if (!data.password) errors.push('Contraseña es requerida');
+  if (data.password && data.password.length < 6) errors.push('La contraseña debe tener al menos 6 caracteres');
   
   return {
     isValid: errors.length === 0,
@@ -121,6 +136,46 @@ export function formatErrorResponse(message: string, statusCode: number = 400) {
     error: message,
     statusCode
   };
+}
+
+/**
+ * Manejar errores de Firebase Auth
+ */
+export function handleAuthError(error: any): functions.https.HttpsError {
+  switch (error.code) {
+    case 'auth/email-already-exists':
+      return new functions.https.HttpsError('already-exists', 'El email ya está registrado');
+    case 'auth/invalid-email':
+      return new functions.https.HttpsError('invalid-argument', 'Email inválido');
+    case 'auth/weak-password':
+      return new functions.https.HttpsError('invalid-argument', 'La contraseña es muy débil');
+    case 'auth/user-not-found':
+      return new functions.https.HttpsError('not-found', 'Usuario no encontrado');
+    case 'auth/wrong-password':
+      return new functions.https.HttpsError('permission-denied', 'Contraseña incorrecta');
+    case 'auth/too-many-requests':
+      return new functions.https.HttpsError('resource-exhausted', 'Demasiados intentos, intenta más tarde');
+    default:
+      return new functions.https.HttpsError('internal', 'Error de autenticación');
+  }
+}
+
+/**
+ * Manejar errores de Firestore
+ */
+export function handleFirestoreError(error: any): functions.https.HttpsError {
+  switch (error.code) {
+    case 'permission-denied':
+      return new functions.https.HttpsError('permission-denied', 'No tienes permisos para realizar esta acción');
+    case 'not-found':
+      return new functions.https.HttpsError('not-found', 'Documento no encontrado');
+    case 'already-exists':
+      return new functions.https.HttpsError('already-exists', 'El documento ya existe');
+    case 'invalid-argument':
+      return new functions.https.HttpsError('invalid-argument', 'Argumentos inválidos');
+    default:
+      return new functions.https.HttpsError('internal', 'Error de base de datos');
+  }
 }
 
 /**
