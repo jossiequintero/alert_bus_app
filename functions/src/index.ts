@@ -2,7 +2,7 @@ import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import * as cors from 'cors';
 import * as express from 'express';
-
+import usuarioRoutes from "./routes/user.routes";
 // Inicializar Firebase Admin
 if (!admin.apps.length) {
   admin.initializeApp();
@@ -305,9 +305,15 @@ export const registerUser = functions.https.onRequest((req, res) => {
 //export * from './userFunctions';
 //export * from './userFunctions';
 
-export * from "./user.function";
+//export * from "./user.function";
 //Object.assign(exports, userFunctions);
 
 
 // Exportar la aplicación Express
+//export const api = functions.https.onRequest(app);
+
+// 🔹 Prefijo base para tus endpoints
+app.use("/user", usuarioRoutes);
+
+// 🔥 Exporta la API como una única función
 export const api = functions.https.onRequest(app);

@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { environment } from 'src/environments/environment';
 import { User } from '../models/user.model';
-import { FirebaseFunctionsService, RegisterUserRequest } from './firebase-functions.service';
-import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable({
   providedIn: 'root'
@@ -11,67 +12,83 @@ export class AuthService {
   private currentUserSubject = new BehaviorSubject<User | null>(null);
   public currentUser$ = this.currentUserSubject.asObservable();
 
-  private rolMapping: any  = {
+  private rolMapping: any = {
     'pasajero': 1,
     'conductor': 2,
     'admin': 3
   };
 
-  constructor(private firebaseFunctions: FirebaseFunctionsService) {
-    // Cargar usuario desde localStorage si existe
+  // 👇 URL base definida en environment.ts
+  private apiUrl = environment.apiUrl; // Ej: 'https://api-unsbbqln3q-uc.a.run.app'
+
+  constructor(private http: HttpClient) {
     const savedUser = localStorage.getItem('currentUser');
     if (savedUser) {
       this.currentUserSubject.next(JSON.parse(savedUser));
     }
   }
 
-  login(email: string, password: string, role: string): Observable<User> {
-    // Simulación de login - en producción esto sería una llamada HTTP
+  // 🔹 Login simulado (puedes reemplazarlo con un endpoint real más adelante)
+  login(email: string, password: string): Observable<User> {
     return new Observable(observer => {
       setTimeout(() => {
- 
-
-        const user: User = {
-          id: this.generateId(),
-          email,
-          name: 'Usuario',
-          lastname: 'Prueba',
-          roleId: this.rolMapping[role] || this.rolMapping['pasajero'],
-          createdAt: new Date()
+        const user = {
+          correo: email,
+          contraseña: password
         };
         
-        this.currentUserSubject.next(user);
-        localStorage.setItem('currentUser', JSON.stringify(user));
-        observer.next(user);
-        observer.complete();
+        this.http.post<any>(`${this.apiUrl}user/login`, user).subscribe({
+          next: (response)=>{
+            const userData = response.data
+           
+            const user: User = {
+              id: userData.user_id,
+              correo: userData.correo,
+              nombre: userData.nombre,
+              apellldo: userData.apellido,
+              roleId: userData.rol_id,
+            };
+            console.log("login:", user);
+            
+            this.currentUserSubject.next(user);
+            localStorage.setItem('currentUser', JSON.stringify(user));
+            observer.next(user);
+            observer.complete();
+          }
+        });
+
       }, 1000);
     });
   }
 
+  // 🔹 Registro usando la API REST de Firebase Functions
   register(email: string, password: string, name: string, lastname: string, role: string): Observable<User> {
     return new Observable(observer => {
-      // Mapear roles a números según la función registerUser
- 
-      const userData: RegisterUserRequest = {
+      
+      const roleId = this.rolMapping[role] || this.rolMapping['pasajero'];
+      const uid = uuidv4();
+
+      const userData = {
+        user_id: uid,
         nombre: name,
         apellidos: lastname,
         correo: email,
-        password: password,
-        roleId: this.rolMapping[role] || this.rolMapping['pasajero']
+        contraseña: password,
+        rol_id: roleId
       };
-
-      this.firebaseFunctions.registerUser(userData).subscribe({
-        next: (response) => {
+      /*
+      this.http.get<any>(`${this.apiUrl}user/all`).subscribe({
+        next: (response) =>{
           if (response.success) {
-            const user: User = {
-              id: response.data.user_id,
-              email,
-              name,
-              lastname,
-              roleId: this.rolMapping[role] || this.rolMapping['pasajero'],
+             const user: User = {
+              id: userData.user_id,
+              correo,
+              nombre,
+              apellido,
+              roleId,
               createdAt: new Date()
             };
-            
+
             this.currentUserSubject.next(user);
             localStorage.setItem('currentUser', JSON.stringify(user));
             observer.next(user);
@@ -81,8 +98,37 @@ export class AuthService {
           }
         },
         error: (error) => {
-          console.error('Error en registro:', error);
-          observer.error(new Error('Error de conexión al registrar usuario'));
+          console.error('❌ Error al registrar usuario:', error);
+          observer.error(new Error('Error de conexión con el servidor'));
+        
+        }
+      })
+
+      */
+
+      // 🔥 Llamada HTTP al endpoint de tu API
+      this.http.post<any>(`${this.apiUrl}user/registrar`, userData).subscribe({
+        next: (response) => {
+          if (response.success) {
+            const user: User = {
+              id: userData.user_id,
+              correo: email,
+              nombre: name,
+              apellldo: lastname,
+              roleId,
+            };
+
+            this.currentUserSubject.next(user);
+            localStorage.setItem('currentUser', JSON.stringify(user));
+            observer.next(user);
+            observer.complete();
+          } else {
+            observer.error(new Error(response.error || 'Error al registrar usuario'));
+          }
+        },
+        error: (error) => {
+          console.error('❌ Error al registrar usuario:', error);
+          observer.error(new Error('Error de conexión con el servidor'));
         }
       });
     });
@@ -102,6 +148,6 @@ export class AuthService {
   }
 
   private generateId(): string {
-    return Math.random().toString(36).substr(2, 9);
+    return Math.random().toString(36).substring(2, 10);
   }
 }

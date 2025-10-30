@@ -1,6 +1,6 @@
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import {UserData, handleAuthError, validateUserData} from './utils';
+//import {UserData, handleAuthError, validateUserData} from './utils';
 
 // Inicializar Firebase Admin si no está inicializado
 if (!admin.apps.length) {
@@ -9,7 +9,7 @@ if (!admin.apps.length) {
 /**
  * Registrar un nuevo usuario
  */
-
+/*
 export const registerUserCall = functions.https.onCall(async (data: any, context:any) => {
   try {
     // Validar datos de entrada
@@ -72,43 +72,42 @@ export const registerUserCall = functions.https.onCall(async (data: any, context
     throw handleAuthError(error);
   }
 });
+*/
+export const registerUserRequest = functions.https.onRequest(async (req:any, res:any) => {
+  try {
+    if (req.method !== 'POST') {
+      return res.status(405).json({ success: false, error: 'Method not allowed' });
+    }
 
-export const registerUserRequest = functions.https.onRequest((req, res) => {
-  if (req.method !== 'POST') {
-    res.status(405).json({ success: false, error: 'Method not allowed' });
-    return;
+    const { user_id, correo, nombre, apellidos, contraseña, rol_id } = req.body;
+
+    if (!user_id || !nombre || !correo || !contraseña || !rol_id) {
+      return res.status(400).json({
+        success: false,
+        error: 'Missing required fields: user_id, nombre, correo, contraseña, rol_id',
+      });
+    }
+
+    const db = admin.firestore();
+    const userData = {
+      user_id,
+      correo,
+      nombre,
+      apellidos: apellidos || '',
+      fecha_registro: admin.firestore.FieldValue.serverTimestamp(),
+    };
+
+    await db.collection('usuarios').doc(user_id).set(userData);
+
+    return res.json({ success: true, data: userData });
+  } catch (error: any) {
+    console.error('Error registering user:', error);
+    return res.status(500).json({ success: false, error: error.message });
   }
-
-  const { user_id, correo, nombre,apellidos, contraseña, rol_id } = req.body;
-
-  if (!user_id || !nombre || !correo || !contraseña || !rol_id) {
-    res.status(400).json({ 
-      success: false, 
-      error: 'Missing required fields: user_id, nombre, correo, contraseña, rol_id' 
-    });
-    return;
-  }
-
-  const db = admin.firestore();
-  const userData = {
-    user_id,
-    correo,
-    nombre: nombre || '',
-    apellidos: apellidos || '',
-    fecha_registro: admin.firestore.FieldValue.serverTimestamp()
-  };
-
-  db.collection('usuarios').doc(user_id).set(userData)
-    .then(() => {
-      res.json({ success: true, data: userData });
-    })
-    .catch(error => {
-      console.error('Error registering user:', error);
-      res.status(500).json({ success: false, error: error.message });
-    });
 });
 
 
+/*
 export const sumar = functions.https.onCall((data: any, context) => {
     const { a, b } = data;
     return { resultado: a + b };
@@ -117,5 +116,5 @@ export const sumar = functions.https.onCall((data: any, context) => {
 export const mensaje  = functions.https.onCall((data: any, context)=>{
     return {mensaje: `Hola ${data.mensaje}`};
 });
-  
+  */
 
