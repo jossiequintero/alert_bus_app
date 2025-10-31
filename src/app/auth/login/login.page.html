@@ -45,12 +45,13 @@
     </form>
 
     <div class="register-section">
-      <p>{{ isLoginMode ? '¿No tienes cuenta?' : '¿Ya tienes una cuenta?' }}</p>
+      
       <ion-button 
         fill="clear" 
+        [routerLink]="['/auth/register']"
         (click)="toggleMode()"
         [disabled]="isLoading">
-        {{ isLoginMode ? 'Registrarse' : 'Iniciar Sesión' }}
+        ¿No tienes cuenta?
       </ion-button>
     </div>
 

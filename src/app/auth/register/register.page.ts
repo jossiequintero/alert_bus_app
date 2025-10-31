@@ -93,9 +93,9 @@ export class RegisterPage implements OnInit {
     if (user) {
       if (user.roleId == 1) {
         this.router.navigate(['/user/dashboard']);
-      } else if (user.role == 2) {
+      } else if (user.roleId == 2) {
         this.router.navigate(['/driver/dashboard']);
-      } else if (user.role == 3) {
+      } else if (user.roleId == 3) {
         this.router.navigate(['/admin/dashboard']);
       }
     }
