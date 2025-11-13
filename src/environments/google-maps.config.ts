@@ -1,7 +1,8 @@
 // Configuración para Google Maps - Guayaquil, Ecuador
 // Reemplaza 'YOUR_API_KEY' con tu clave de API de Google Maps
 export const GOOGLE_MAPS_CONFIG = {
-  apiKey: 'AIzaSyAkIam9QrImFYkgRxs4C0dF_q4IzMKJla0', // Obtén tu clave de API desde Google Cloud Console
+  apiKey: 'AIzaSyAJ9mvCFtH9zfEjQueueDiYc1YZSb0cr5I', // Obtén tu clave de API desde Google Cloud Console
+  //apiKey: 'AIzaSyAkIam9QrImFYkgRxs4C0dF_q4IzMKJla0', // Obtén tu clave de API desde Google Cloud Console
   libraries: ['places', 'geometry'] as const,
   // Configuración específica para Guayaquil
   defaultCenter: {

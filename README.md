@@ -86,7 +86,7 @@ src/
 ## Funcionalidades Principales
 
 ### Sistema de Autenticación
-- Login/Registro con selección de rol (Usuario/Chofer)
+- Login/Registro con selección de rol (Usuario/Conductor/Administrador)
 - Gestión de sesiones
 - Redirección automática basada en rol
 

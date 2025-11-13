@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { ToastController } from '@ionic/angular';
 import { AuthService } from '../../services/auth.service';
@@ -7,6 +7,9 @@ import { BusService } from '../../services/bus.service';
 import { Bus, BusRoute } from '../../models/bus.model';
 import { User } from '../../models/user.model';
 import { Subscription } from 'rxjs';
+import { environment } from 'src/environments/environment';
+import { GOOGLE_MAPS_CONFIG } from 'src/environments/google-maps.config';
+import { MapInfoWindow, MapMarker } from '@angular/google-maps';
 
 interface NearbyBus extends Bus {
   distance: number;
@@ -19,31 +22,42 @@ interface NearbyBus extends Bus {
   standalone: false,
 })
 export class DashboardPage implements OnInit, OnDestroy {
+  @ViewChild(MapInfoWindow) infoWindow!: MapInfoWindow;
+
   currentUser: User | null = null;
   currentLocation: Location | null = null;
   nearbyBuses: NearbyBus[] = [];
   isUpdatingLocation = false;
+  zoom = 15;
+  center: google.maps.LatLngLiteral = { lat: 0, lng: 0 };
+  markerPosition: google.maps.LatLngLiteral = { lat: 0, lng: 0 };
+  markerTitle = 'Mi ubicación actual';
   private subscriptions: Subscription[] = [];
-
+  private apiKey: string = GOOGLE_MAPS_CONFIG.apiKey;
+  
   constructor(
     private authService: AuthService,
     private geolocationService: GeolocationService,
     private busService: BusService,
     private router: Router,
-    private toastController: ToastController
+    private toastController: ToastController,
+    
   ) {}
 
   ngOnInit() {
     this.currentUser = this.authService.getCurrentUser();
-    
     if (!this.currentUser) {
       this.router.navigate(['/auth/login']);
       return;
     }
-
+    
     this.loadCurrentLocation();
-    this.subscribeToLocationUpdates();
-    this.subscribeToBusUpdates();
+
+    this.setCurrentLocation();
+    this.loadGoogleMaps();
+
+   // this.subscribeToLocationUpdates();
+  //  this.subscribeToBusUpdates();
   }
 
   ngOnDestroy() {
@@ -53,7 +67,8 @@ export class DashboardPage implements OnInit, OnDestroy {
   async loadCurrentLocation() {
     try {
       this.currentLocation = await this.geolocationService.getCurrentPosition();
-      this.findNearbyBuses();
+      console.log('Current location:', this.currentLocation);
+      //this.findNearbyBuses();
     } catch (error) {
       console.error('Error obteniendo ubicación:', error);
       await this.showToast('Error obteniendo ubicación', 'danger');
@@ -139,5 +154,45 @@ export class DashboardPage implements OnInit, OnDestroy {
       position: 'top'
     });
     await toast.present();
+  }
+
+
+  loadGoogleMaps() {
+    if (!document.querySelector('#google-maps-script')) {
+      console.log('Loading Google Maps script');
+      const script = document.createElement('script');
+      script.id = 'google-maps-script';
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${this.apiKey}`;
+      script.async = true;
+      script.defer = true;
+      document.body.appendChild(script);
+    }
+  }
+
+  // ✅ Obtener la ubicación actual
+  async setCurrentLocation() {
+    try {
+      const position:any = await this.geolocationService.getCurrentPosition();
+      const lat = position.latitude;
+      const lng = position.longitude;
+/*
+      const location: Location = {
+        latitude: coordinates.coords.latitude,
+        longitude: coordinates.coords.longitude,
+        accuracy: coordinates.coords.accuracy,
+        timestamp: new Date(coordinates.timestamp)
+      };*/
+
+      this.center = { lat, lng };
+      this.markerPosition = { lat, lng };
+      console.log('Center:', this.center);
+      console.log('Marker position:', this.markerPosition);
+    } catch (error) {
+      console.error('❌ Error obteniendo ubicación:', error);
+    }
+  }
+
+  openInfoWindow(marker: MapMarker) {
+    this.infoWindow.open(marker);
   }
 }

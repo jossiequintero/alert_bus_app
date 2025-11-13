@@ -7,7 +7,7 @@ export const environment = {
   firebaseFunctionsUrl: 'https://us-central1-alert-bus-fc1e6.cloudfunctions.net',
   apiUrl: 'https://api-unsbbqln3q-uc.a.run.app/',
   //googleMapsApiKey: 'AIzaSyAkIam9QrImFYkgRxs4C0dF_q4IzMKJla0',
-  googleMapsApiKey: 'AIzaSyAptFuFpDtnTwAn_poQk51uS0_RMvE_Gqc',
+  googleMapsApiKey: 'AIzaSyAJ9mvCFtH9zfEjQueueDiYc1YZSb0cr5I',
   firebase: {
     apiKey: "AIzaSyAkIam9QrImFYkgRxs4C0dF_q4IzMKJla0",
     authDomain: "alert-bus-fc1e6.firebaseapp.com",

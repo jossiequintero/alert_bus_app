@@ -44,15 +44,15 @@
     </ion-row>
   </ion-grid>
 
-  <div class="location-section" *ngIf="currentLocation">
+  <div class="location-section" >
     <ion-card>
       <ion-card-header>
         <ion-card-title>Tu Ubicación Actual</ion-card-title>
       </ion-card-header>
       <ion-card-content>
-        <p>Latitud: {{ currentLocation.latitude | number:'1.6-6' }}</p>
-        <p>Longitud: {{ currentLocation.longitude | number:'1.6-6' }}</p>
-        <p>Precisión: {{ currentLocation.accuracy | number:'1.0-0' }}m</p>
+        <p>Latitud: {{ currentLocation?.latitude | number:'1.6-6' }}</p>
+        <p>Longitud: {{ currentLocation?.longitude | number:'1.6-6' }}</p>
+        <p>Precisión: {{ currentLocation?.accuracy | number:'1.0-0' }}m</p>
         <ion-button 
           fill="outline" 
           size="small" 
@@ -62,6 +62,38 @@
           <ion-icon *ngIf="!isUpdatingLocation" name="refresh-outline"></ion-icon>
           Actualizar Ubicación
         </ion-button>
+        
+      </ion-card-content>
+   
+      
+    </ion-card>
+  </div>
+  <div class="location-section" *ngIf="currentLocation" >
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Map</ion-card-title>
+      </ion-card-header>
+
+    
+      <ion-card-content>
+        <div class="" style="width: 100%; height: 500px;" >
+          <google-map 
+          height="100%"
+          width="100%"
+          [zoom]="13"
+          [center]="center"
+          > 
+          <map-marker
+            #marker="mapMarker"
+            [position]="markerPosition"
+            [title]="markerTitle"
+            (mapClick)="openInfoWindow(marker)">
+          </map-marker>
+
+        
+        </google-map>
+
+        </div>
       </ion-card-content>
     </ion-card>
   </div>

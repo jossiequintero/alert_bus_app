@@ -43,7 +43,6 @@ export class LoginPage implements OnInit {
       try {
         const user = await this.authService.login(email, password).toPromise();
         this.isLoading = false;
-        
         await this.showToast(`¡Bienvenido ${user?.nombre || 'Usuario'}!`, 'success');
         this.redirectBasedOnRole();
       } catch (error) {

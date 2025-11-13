@@ -39,7 +39,9 @@ export class AuthService {
         
         this.http.post<any>(`${this.apiUrl}user/login`, user).subscribe({
           next: (response)=>{
-            const userData = response.data
+            if(response.success){ 
+              const userData = response.data
+             
            
             const user: User = {
               id: userData.user_id,
@@ -54,9 +56,14 @@ export class AuthService {
             localStorage.setItem('currentUser', JSON.stringify(user));
             observer.next(user);
             observer.complete();
+            
           }
-        });
+          else {
+            observer.error(new Error(response.error || 'Error al iniciar sesión'));
+          }
 
+        }
+      })
       }, 1000);
     });
   }

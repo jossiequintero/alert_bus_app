@@ -20,12 +20,8 @@ export class GeolocationService {
 
   async getCurrentPosition(): Promise<Location> {
     try {
-      const coordinates = await Geolocation.getCurrentPosition({
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 300000 // 5 minutos
-      });
-
+      const coordinates = await Geolocation.getCurrentPosition();
+      console.log({coordinates});
       const location: Location = {
         latitude: coordinates.coords.latitude,
         longitude: coordinates.coords.longitude,
@@ -35,8 +31,17 @@ export class GeolocationService {
 
       this.currentLocationSubject.next(location);
       return location;
-    } catch (error) {
+    } catch (error:any) {
       console.error('Error obteniendo ubicación:', error);
+      if (error.code === 1) {
+        console.error('🚫 Permiso denegado por el usuario.');
+      } else if (error.code === 2) {
+        console.error('📡 Posición no disponible (sin GPS o simulador).');
+      } else if (error.code === 3) {
+        console.error('⏰ Tiempo de espera agotado.');
+      } else {
+        console.error('❌ Error desconocido:', error);
+      }
       throw error;
     }
   }
