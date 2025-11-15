@@ -26,6 +26,14 @@ export async function registrarUsuario(req: Request, res: Response) {
     const salt = bcrypt.genSaltSync(10); // nivel de seguridad (10 es un buen punto)
     const hashedPassword = bcrypt.hashSync(contraseña, salt);
 
+    const userQuery = await db.collection("usuarios").where("correo", "==", correo).limit(1).get();
+    
+    if (userQuery.empty) {
+      return res.status(409).json({
+        success: false,
+        error: "El Usuario ya se encuentra registrado.",
+      });
+    }
     const userData = {
       user_id,
       nombre,
