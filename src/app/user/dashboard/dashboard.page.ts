@@ -51,7 +51,7 @@ export class DashboardPage implements OnInit, OnDestroy {
       return;
     }
     
-    this.loadCurrentLocation();
+  //    this.loadCurrentLocation();
 
     this.setCurrentLocation();
     this.loadGoogleMaps();
@@ -78,8 +78,10 @@ export class DashboardPage implements OnInit, OnDestroy {
   async updateLocation() {
     this.isUpdatingLocation = true;
     try {
-      this.currentLocation = await this.geolocationService.getCurrentPosition();
-      this.findNearbyBuses();
+      // this.currentLocation = await this.geolocationService.getCurrentPosition();
+      // this.findNearbyBuses();
+      this.setCurrentLocation();
+      this.loadGoogleMaps();
       await this.showToast('Ubicación actualizada', 'success');
     } catch (error) {
       console.error('Error actualizando ubicación:', error);
@@ -172,9 +174,10 @@ export class DashboardPage implements OnInit, OnDestroy {
   // ✅ Obtener la ubicación actual
   async setCurrentLocation() {
     try {
-      const position:any = await this.geolocationService.getCurrentPosition();
-      const lat = position.latitude;
-      const lng = position.longitude;
+      //const position:any = await this.geolocationService.getCurrentPosition();
+      this.currentLocation = await this.geolocationService.getCurrentPosition();
+      const lat = this.currentLocation.latitude;
+      const lng = this.currentLocation.longitude;
 /*
       const location: Location = {
         latitude: coordinates.coords.latitude,

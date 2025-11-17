@@ -5,7 +5,7 @@
 ### ✅ Cambios Realizados
 
 #### **📍 Ubicación y Coordenadas**
-- **Ubicación por defecto**: Cambiada de Ciudad de México a Guayaquil, Ecuador
+- **Ubicación por defecto**: Ciudad de  Guayaquil, Ecuador
 - **Coordenadas centrales**: -2.1894, -79.8890 (Centro de Guayaquil)
 - **Zoom por defecto**: 13 (optimizado para Guayaquil)
 - **Límites geográficos**: Configurados para el área metropolitana de Guayaquil
