@@ -1,0 +1,45 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Agregar AutoBús</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="close()">Cerrar</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+
+  <form [formGroup]="busForm">
+    <ion-item>
+      <ion-label position="stacked">Número de Autobús</ion-label>
+      <ion-input formControlName="number" placeholder="Ej: A-101"></ion-input>
+    </ion-item>
+
+    <ion-item>
+      <ion-label position="stacked">Ruta</ion-label>
+      <ion-select formControlName="routeId"
+        placeholder="Selecciona una ruta"  
+      >
+        <ion-select-option 
+          *ngFor="let r of routes"
+          [value]="r.id">
+          {{ r.name }}
+        </ion-select-option>
+      </ion-select>
+    </ion-item>
+
+    <ion-item>
+      <ion-label position="stacked">Capacidad</ion-label>
+      <ion-input type="number"  placeholder="50" formControlName="capacity"></ion-input>
+    </ion-item>
+    <ion-item>
+      <ion-label position="stacked">Placa</ion-label>
+      <ion-input type="text"  placeholder="GTP-0123" formControlName="placa"></ion-input>
+    </ion-item>
+
+    <ion-button expand="block" (click)="save()" [disabled]="busForm.invalid">
+      Guardar
+    </ion-button>
+  </form>
+
+</ion-content>

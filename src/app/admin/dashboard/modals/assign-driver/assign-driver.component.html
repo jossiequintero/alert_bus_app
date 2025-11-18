@@ -1,0 +1,34 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Asignar Conductor</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="close()">Cerrar</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+
+  <ion-item>
+    <ion-label>Bus</ion-label>
+    <ion-select>
+      <ion-select-option *ngFor="let b of buses" [value]="b.id">
+        {{ b.number }}
+      </ion-select-option>
+    </ion-select>
+  </ion-item>
+
+  <ion-item>
+    <ion-label>Conductor</ion-label>
+    <ion-select>
+      <ion-select-option *ngFor="let d of drivers" [value]="d.id">
+        {{ d.nombre }}
+      </ion-select-option>
+    </ion-select>
+  </ion-item>
+
+  <ion-button expand="block" (click)="assign()">
+    Asignar
+  </ion-button>
+
+</ion-content>

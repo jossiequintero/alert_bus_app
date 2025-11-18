@@ -1,0 +1,37 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Nueva Ruta</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="close()">Cerrar</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+
+  <form [formGroup]="routeForm">
+
+    <ion-item>
+      <ion-label position="floating">Nombre</ion-label>
+      <ion-input formControlName="name"></ion-input>
+    </ion-item>
+
+    <ion-list>
+      <ion-item *ngFor="let stop of stops; let i = index">
+        {{ stop.name }}
+        <ion-button fill="clear" color="danger" (click)="removeStop(i)">
+          <ion-icon name="trash"></ion-icon>
+        </ion-button>
+      </ion-item>
+    </ion-list>
+
+    <ion-button expand="block" (click)="addStop()">Agregar parada</ion-button>
+
+    <ion-button expand="block" (click)="save()" [disabled]="routeForm.invalid">
+      Guardar Ruta
+    </ion-button>
+
+  </form>
+
+</ion-content>
+

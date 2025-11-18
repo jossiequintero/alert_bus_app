@@ -28,13 +28,13 @@ export async function registrarUsuario(req: Request, res: Response) {
 
     const userQuery = await db.collection("usuarios").where("correo", "==", correo).limit(1).get();
     
-    if (userQuery.empty) {
+    if (!userQuery.empty) {
       return res.status(409).json({
         success: false,
         error: "El Usuario ya se encuentra registrado.",
       });
     }
-    const userData = {
+    const userData:any = {
       user_id,
       nombre,
       apellidos: apellidos || "",
@@ -46,6 +46,7 @@ export async function registrarUsuario(req: Request, res: Response) {
 
     await db.collection("usuarios").doc(user_id).set(userData);
 
+    delete userData.contraseña;
     return res.status(201).json({
       success: true,
       data: userData,
