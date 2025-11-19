@@ -1,6 +1,9 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { Bus, BusRoute, BusStop } from '../models/bus.model';
+import { v4 as uuidv4 } from 'uuid';
+import { environment } from 'src/environments/environment';
+import { HttpClient } from '@angular/common/http';
 
 @Injectable({
   providedIn: 'root'
@@ -13,8 +16,9 @@ export class BusService {
   public buses$ = this.busesSubject.asObservable();
   public routes$ = this.routesSubject.asObservable();
   public stops$ = this.stopsSubject.asObservable();
+  private apiUrl = environment.apiUrl;
 
-  constructor() {
+  constructor(private http: HttpClient) {
     this.initializeMockData();
   }
 
@@ -123,7 +127,8 @@ export class BusService {
         isActive: true,
         lastUpdate: new Date(),
         capacity: 50,
-        currentPassengers: 25
+        currentPassengers: 25,
+        placa: 'ABC-1234'
       },
       {
         id: '2',
@@ -134,7 +139,8 @@ export class BusService {
         isActive: true,
         lastUpdate: new Date(),
         capacity: 50,
-        currentPassengers: 30
+        currentPassengers: 30,
+        placa: 'DEF-5678'
       },
       {
         id: '3',
@@ -145,7 +151,8 @@ export class BusService {
         isActive: true,
         lastUpdate: new Date(),
         capacity: 40,
-        currentPassengers: 18
+        currentPassengers: 18,
+        placa: 'GHI-9012'
       }
     ];
 
@@ -198,21 +205,33 @@ export class BusService {
   registerBus(bus: Omit<Bus, 'id' | 'lastUpdate'>): Observable<Bus> {
     return new Observable(observer => {
       setTimeout(() => {
+        const uid = uuidv4();
         const newBus: Bus = {
           ...bus,
-          id: this.generateId(),
+          id: uid,
           lastUpdate: new Date()
         };
-        
-        const buses = this.busesSubject.value;
-        this.busesSubject.next([...buses, newBus]);
-        observer.next(newBus);
-        observer.complete();
+        console.log('Registering bus:', newBus);
+        //return;
+        this.http.post<Bus>(`${this.apiUrl}buses/registrar`, newBus).subscribe({
+          next: (response:any) => {
+            if(response.success){
+              const buses = this.busesSubject.value;
+              this.busesSubject.next([...buses, response]);
+              observer.next(response);
+              observer.complete();
+            }
+            else{
+              observer.error(new Error(response.error || 'Error al registrar el bus'));
+            }
+          },
+          error: (error) => {
+            console.error('❌ Error al registrar el bus:', error);
+            observer.error(error);
+          }
+        });
       }, 1000);
     });
   }
 
-  private generateId(): string {
-    return Math.random().toString(36).substr(2, 9);
-  }
 }

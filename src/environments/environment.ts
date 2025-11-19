@@ -16,6 +16,7 @@ export const environment = {
     messagingSenderId: "123456789",
     appId: "1:123456789:web:abcdef123456"
   },
+  apiKeyFCM: "AIzaSyDKuIPZzZ6qqKFlTnECMRmuC5e4NfqPVq4",
   // Configuración específica para Guayaquil, Ecuador
   defaultLocation: {
     latitude: -2.1894,

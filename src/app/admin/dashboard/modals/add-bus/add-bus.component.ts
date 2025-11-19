@@ -1,5 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { ModalController, IonicModule } from '@ionic/angular';
+import { ModalController, IonicModule, ToastController } from '@ionic/angular';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { BusService } from '../../../../services/bus.service';
 import { CommonModule } from '@angular/common';
@@ -20,12 +20,14 @@ export class AddBusComponent  {
    constructor(
     private modalCtrl: ModalController,
     private fb: FormBuilder,
-    private busService: BusService
+    private busService: BusService,
+    private toastController: ToastController
   ) {
     this.busForm = this.fb.group({
       number: ['', Validators.required],
       routeId: ['', Validators.required],
-      capacity: [50, Validators.required]
+      capacity: [50, Validators.required],
+      placa: ['', Validators.required],
     });
   }
 
@@ -45,9 +47,20 @@ export class AddBusComponent  {
       currentLocation: { latitude: 0, longitude: 0 },
       isActive: false,
       capacity: data.capacity,
-      currentPassengers: 0
+      placa: data.placa,
+      currentPassengers: 0,
     }).toPromise();
-
+ 
+    await this.showToast('Autobús registrado exitosamente', 'success');
     this.modalCtrl.dismiss(true);
+  }
+    private async showToast(message: string, color: string) {
+    const toast = await this.toastController.create({
+      message,
+      duration: 3000,
+      color,
+      position: 'top'
+    });
+    await toast.present();
   }
 }

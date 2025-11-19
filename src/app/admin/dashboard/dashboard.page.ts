@@ -220,14 +220,20 @@ export class DashboardPage implements OnInit, OnDestroy {
   await modal.present();
 }
 async openAddRouteModal() {
+  console.log('modal route');
+  
   const modal = await this.modalCtrl.create({
     component: AddRouteComponent
   });
+  await modal.present();
+
   const { data } = await modal.onWillDismiss();
 
   if (data) {
     //this.busService.addRoute(data);
   }
+  console.log({data_desde_modal:data});
+  
 }
 
 async openAssignDriverModal() {
@@ -238,6 +244,7 @@ async openAssignDriverModal() {
       // drivers: this.busService.drivers
     }
   });
+  modal.present();
   const { data } = await modal.onWillDismiss();
 
   if (data) {

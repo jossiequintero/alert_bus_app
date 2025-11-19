@@ -11,7 +11,8 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "lint": "ng lint",
-    "device": "ionic build && ionic capacitor run android -l --external --target=YXCI5XRCEMLBKJZD"
+    "device": "ionic build && ionic capacitor run android -l --external --target=YXCI5XRCEMLBKJZD",
+    "devicew": "ionic build && ionic capacitor run android -l --external --target=adb-YXCI5XRCEMLBKJZD-pxVL6F._adb-tls-connect._tcp"
   },
   "private": true,
   "dependencies": {

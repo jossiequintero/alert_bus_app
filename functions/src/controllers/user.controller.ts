@@ -137,3 +137,73 @@ export async function listarUsuarios(req: Request, res: Response) {
     });
   }
 }
+
+/**
+ * Guardar token de notificaciones push para un usuario
+ */
+export async function guardarTokenPush(req: Request, res: Response) {
+  try {
+    const { userId, token, platform } = req.body;
+
+    if (!userId || !token) {
+      return res.status(400).json({
+        success: false,
+        error: "Campos requeridos: userId, token",
+      });
+    }
+
+    // Verificar que el usuario existe
+    const userDoc = await db.collection("usuarios").doc(userId).get();
+    
+    if (!userDoc.exists) {
+      return res.status(404).json({
+        success: false,
+        error: "Usuario no encontrado",
+      });
+    }
+
+    // Guardar o actualizar el token en la colección de tokens
+    const tokenData: any = {
+      userId,
+      token,
+      platform: platform || "android",
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    };
+
+    // Buscar si ya existe un token para este usuario y plataforma
+    const tokenQuery = await db
+      .collection("push_tokens")
+      .where("userId", "==", userId)
+      .where("platform", "==", platform || "android")
+      .limit(1)
+      .get();
+
+    if (!tokenQuery.empty) {
+      // Actualizar token existente
+      const tokenDoc = tokenQuery.docs[0];
+      await tokenDoc.ref.update(tokenData);
+      
+      return res.status(200).json({
+        success: true,
+        message: "Token actualizado exitosamente",
+        data: { tokenId: tokenDoc.id, ...tokenData },
+      });
+    } else {
+      // Crear nuevo token
+      tokenData.createdAt = admin.firestore.FieldValue.serverTimestamp();
+      const tokenRef = await db.collection("push_tokens").add(tokenData);
+      
+      return res.status(201).json({
+        success: true,
+        message: "Token guardado exitosamente",
+        data: { tokenId: tokenRef.id, ...tokenData },
+      });
+    }
+  } catch (error: any) {
+    console.error("Error al guardar token push:", error);
+    return res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
+}

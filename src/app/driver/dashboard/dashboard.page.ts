@@ -133,19 +133,20 @@ export class DashboardPage implements OnInit, OnDestroy {
       const { number, routeId, capacity } = this.busForm.value;
 
       try {
-        const newBus = await this.busService.registerBus({
-          number,
-          driverId: this.currentUser.id,
-          routeId,
-          currentLocation: this.currentLocation || { latitude: 0, longitude: 0 },
-          isActive: false,
-          capacity,
-          currentPassengers: 0
-        }).toPromise();
+      //   const newBus = await this.busService.registerBus({
+      //     number,
+      //     driverId: this.currentUser.id,
+      //     routeId,
+      //     currentLocation: this.currentLocation || { latitude: 0, longitude: 0 },
+      //     isActive: false,
+      //     capacity,
+      //     currentPassengers: 0,
+      //     placa: ''
+      //   }).toPromise();
 
-        this.currentBus = newBus || null;
-        this.currentRoute = newBus ? this.busService.getRouteById(newBus.routeId) || null : null;
-        this.busForm.reset();
+      //   this.currentBus = newBus || null;
+      //   this.currentRoute = newBus ? this.busService.getRouteById(newBus.routeId) || null : null;
+      //   this.busForm.reset();
         
         await this.showToast('Autobús registrado exitosamente', 'success');
       } catch (error) {

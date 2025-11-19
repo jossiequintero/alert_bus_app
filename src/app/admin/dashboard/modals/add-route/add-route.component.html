@@ -12,26 +12,55 @@
   <form [formGroup]="routeForm">
 
     <ion-item>
-      <ion-label position="floating">Nombre</ion-label>
-      <ion-input formControlName="name"></ion-input>
+      <ion-label position="stacked">Nombre:</ion-label>
+      <ion-input formControlName="name" placeholder="Ej. Ruta Centro - Mall del Sol"></ion-input>
     </ion-item>
-
+    <ion-item>
+      <ion-label position="stacked">Descripción:</ion-label>
+      <ion-input formControlName="descripcion" placeholder="Ej. Conecta el centro de Guayaquil con el Mall del Sol"></ion-input>
+    </ion-item>
+    <ion-item>
+      <ion-label position="stacked">Tiempo Recorrido (aprox):</ion-label>
+      <ion-input type="number" formControlName="tiempoRecorrido"></ion-input>
+    </ion-item>
+    
+  </form>
+    <h3>Paradas</h3>
+    <ion-card>
+      <ion-card-header>
+        <ion-item>
+          <ion-label>Nombre:</ion-label>
+          <ion-input placeholder="Ej. Parque Centenario" [(ngModel)]="stop.nombre"></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-label>Descripcion:</ion-label>
+          <ion-input placeholder="Ej. Parada principal en el centro histórico" [(ngModel)]="stop.descripcion"></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-label>Latitud:</ion-label>
+          <ion-input type="number"[(ngModel)]=stop.latitud></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-label>Longitud:</ion-label>
+          <ion-input type="number"[(ngModel)]=stop.longitud></ion-input>
+        </ion-item>
+        <ion-button (click)="addStop()">Agregar parada</ion-button>
+      </ion-card-header>
+    </ion-card>
     <ion-list>
-      <ion-item *ngFor="let stop of stops; let i = index">
-        {{ stop.name }}
+      <ion-item *ngFor="let stopitem of stops; let i = index">
+        Parada: {{ stopitem.nombre}}  , longitud: {{stopitem.latitud}}, longitud: {{stopitem.longitud }}
         <ion-button fill="clear" color="danger" (click)="removeStop(i)">
           <ion-icon name="trash"></ion-icon>
         </ion-button>
       </ion-item>
     </ion-list>
 
-    <ion-button expand="block" (click)="addStop()">Agregar parada</ion-button>
-
+   
     <ion-button expand="block" (click)="save()" [disabled]="routeForm.invalid">
       Guardar Ruta
     </ion-button>
 
-  </form>
 
 </ion-content>
 

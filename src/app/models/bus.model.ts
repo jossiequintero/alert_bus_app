@@ -4,13 +4,14 @@ export interface Bus {
   driverId: string;
   routeId: string;
   currentLocation: {
-    latitude: number;
-    longitude: number;
-  };
+    latitude: number | 0;
+    longitude: number | 0;
+  } ;
   isActive: boolean;
-  lastUpdate: Date;
+  lastUpdate: Date | null;
   capacity: number;
   currentPassengers: number;
+  placa?: string;
 }
 
 export interface BusRoute {
