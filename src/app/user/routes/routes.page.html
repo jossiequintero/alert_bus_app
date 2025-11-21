@@ -66,12 +66,14 @@
             </map-marker>
             
             <!-- Marcadores de autobuses -->
-            <map-marker 
-              *ngFor="let bus of getBusesForRoute(selectedRoute.id)"
-              [position]="{lat: bus.currentLocation.latitude, lng: bus.currentLocation.longitude}"
-              [title]="'Autobús ' + bus.number"
-              [options]="busMarkerOptions">
-            </map-marker>
+            <ng-container *ngFor="let bus of getBusesForRoute(selectedRoute.id)">
+              <map-marker 
+                *ngIf="bus.currentLocation"
+                [position]="{lat: bus.currentLocation.latitude, lng: bus.currentLocation.longitude}"
+                [title]="'Autobús ' + bus.number"
+                [options]="busMarkerOptions">
+              </map-marker>
+            </ng-container>
           </google-map>
         </div>
 

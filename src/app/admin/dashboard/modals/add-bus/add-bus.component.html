@@ -1,6 +1,6 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>Agregar AutoBús</ion-title>
+    <ion-title>{{ title }}</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="close()">Cerrar</ion-button>
     </ion-buttons>
@@ -37,8 +37,9 @@
       <ion-input type="text"  placeholder="GTP-0123" formControlName="placa"></ion-input>
     </ion-item>
 
-    <ion-button expand="block" (click)="save()" [disabled]="busForm.invalid">
-      Guardar
+    <ion-button expand="block" (click)="save()" [disabled]="busForm.invalid || isSaving">
+      <ion-spinner slot="start" *ngIf="isSaving"></ion-spinner>
+      {{ primaryButtonLabel }}
     </ion-button>
   </form>
 

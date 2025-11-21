@@ -26,7 +26,7 @@
               <h3>Buses</h3>
               <div style="display: flex; flex-direction: column; gap: 10px;">
                 <ion-button id="add_bus" (click)="openAddBusModal()">Agregar Bus</ion-button>
-                <ion-button id="view_buses">Ver buses</ion-button>
+                <ion-button id="view_buses" fill="outline" (click)="selectedSection = 'buses'">Ver buses</ion-button>
               </div>
             </div>
           </ion-card-content>
@@ -41,8 +41,7 @@
               <h3>Rutas</h3>
               <div style="display: flex; flex-direction: column; gap: 10px;">
                 <ion-button id="add-ruta" (click)="openAddRouteModal()">Agregar Ruta</ion-button>
-                <ion-button id="view-ruta">Ver rutas</ion-button>
-
+                <ion-button id="view-ruta" fill="outline" (click)="selectedSection = 'routes'">Ver rutas</ion-button>
               </div> 
             </div>
           </ion-card-content>
@@ -56,7 +55,7 @@
               <h3>Conductores</h3>
               <div style="display: flex; flex-direction: column; gap: 10px;">
                 <ion-button id="assign-driver" (click)="openAssignDriverModal()">Asignar conductor</ion-button>
-                <ion-button id="start-simulation">Iniciar Simulación</ion-button>
+                <ion-button id="start-simulation" fill="outline" (click)="openSimulationPrompt()">Iniciar Simulación</ion-button>
               </div> 
             </div>
           </ion-card-content>
@@ -64,4 +63,133 @@
       </ion-col>
     </ion-row>
   </ion-grid>
+
+  <ion-segment [(ngModel)]="selectedSection">
+    <ion-segment-button value="buses">
+      <ion-label>Buses</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="routes">
+      <ion-label>Rutas</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="drivers">
+      <ion-label>Conductores</ion-label>
+    </ion-segment-button>
+  </ion-segment>
+
+  <div [ngSwitch]="selectedSection" class="management-section">
+    <ng-container *ngSwitchCase="'buses'">
+      <ion-card>
+        <ion-card-header>
+          <ion-card-title>Listado de Buses</ion-card-title>
+          <ion-buttons slot="end">
+            <ion-button fill="clear" (click)="refreshBuses()">
+              <ion-icon slot="start" name="refresh"></ion-icon>
+              Actualizar
+            </ion-button>
+          </ion-buttons>
+        </ion-card-header>
+        <ion-card-content>
+          <div class="empty-state" *ngIf="loadingBuses">
+            <ion-spinner></ion-spinner>
+            <p>Cargando buses...</p>
+          </div>
+
+          <ion-list *ngIf="!loadingBuses && buses.length">
+            <ion-item *ngFor="let bus of buses">
+              <ion-label>
+                <h3>{{ bus.number }} · {{ bus.placa || 'Sin placa' }}</h3>
+                <p>Ruta: {{ getRouteName(bus.routeId) }}</p>
+                <p>Conductor: {{ getDriverName(bus.driverId) }} · Capacidad: {{ bus.capacity }}</p>
+              </ion-label>
+              <ion-buttons slot="end">
+                <ion-button fill="clear" color="success" (click)="startSimulation(bus)" [disabled]="startingSimulation[bus.id]">
+                  <ion-icon slot="icon-only" name="play"></ion-icon>
+                </ion-button>
+                <ion-button fill="clear" (click)="openAddBusModal('edit', bus)">
+                  <ion-icon slot="icon-only" name="create-outline"></ion-icon>
+                </ion-button>
+                <ion-button fill="clear" color="danger" (click)="deleteBus(bus)" [disabled]="deletingBus[bus.id]">
+                  <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+                </ion-button>
+              </ion-buttons>
+            </ion-item>
+          </ion-list>
+
+          <div class="empty-state" *ngIf="!loadingBuses && !buses.length">
+            <p>No hay buses registrados.</p>
+          </div>
+        </ion-card-content>
+      </ion-card>
+    </ng-container>
+
+    <ng-container *ngSwitchCase="'routes'">
+      <ion-card>
+        <ion-card-header>
+          <ion-card-title>Listado de Rutas</ion-card-title>
+          <ion-buttons slot="end">
+            <ion-button fill="clear" (click)="refreshRoutes()">
+              <ion-icon slot="start" name="refresh"></ion-icon>
+              Actualizar
+            </ion-button>
+          </ion-buttons>
+        </ion-card-header>
+        <ion-card-content>
+          <div class="empty-state" *ngIf="loadingRoutes">
+            <ion-spinner></ion-spinner>
+            <p>Cargando rutas...</p>
+          </div>
+
+          <ion-list *ngIf="!loadingRoutes && routes.length">
+            <ion-item *ngFor="let route of routes">
+              <ion-label>
+                <h3>{{ route.name }}</h3>
+                <p>{{ route.description }}</p>
+                <p>{{ route.stops.length }} paradas · {{ route.estimatedDuration }} min</p>
+              </ion-label>
+              <ion-buttons slot="end">
+                <ion-button fill="clear" (click)="openAddRouteModal('edit', route)">
+                  <ion-icon slot="icon-only" name="create-outline"></ion-icon>
+                </ion-button>
+                <ion-button fill="clear" color="danger" (click)="deleteRoute(route)" [disabled]="deletingRoute[route.id]">
+                  <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+                </ion-button>
+              </ion-buttons>
+            </ion-item>
+          </ion-list>
+
+          <div class="empty-state" *ngIf="!loadingRoutes && !routes.length">
+            <p>No hay rutas registradas.</p>
+          </div>
+        </ion-card-content>
+      </ion-card>
+    </ng-container>
+
+    <ng-container *ngSwitchCase="'drivers'">
+      <ion-card>
+        <ion-card-header>
+          <ion-card-title>Conductores registrados</ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <div class="empty-state" *ngIf="loadingDrivers">
+            <ion-spinner></ion-spinner>
+            <p>Cargando conductores...</p>
+          </div>
+          <ion-list *ngIf="!loadingDrivers && drivers.length">
+            <ion-item *ngFor="let driver of drivers">
+              <ion-label>
+                <h3>{{ driver.nombre || driver.correo }}</h3>
+                <p>{{ driver.correo }}</p>
+                <p>
+                  Bus asignado: {{ getBusAsignado(driver.id) }}
+                </p>
+              </ion-label>
+            </ion-item>
+          </ion-list>
+          <div class="empty-state" *ngIf="!loadingDrivers && !drivers.length">
+            <p>No hay conductores registrados.</p>
+          </div>
+        </ion-card-content>
+      </ion-card>
+    </ng-container>
+  </div>
 </ion-content>

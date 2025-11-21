@@ -1,17 +1,18 @@
 export interface Bus {
   id: string;
   number: string;
-  driverId: string;
+  driverId?: string | null;
   routeId: string;
   currentLocation: {
-    latitude: number | 0;
-    longitude: number | 0;
-  } ;
+    latitude: number;
+    longitude: number;
+  };
   isActive: boolean;
-  lastUpdate: Date | null;
+  lastUpdate?: Date | null;
   capacity: number;
   currentPassengers: number;
   placa?: string;
+  simulationId?: string | null;
 }
 
 export interface BusRoute {

@@ -1,8 +1,11 @@
-import { Component, Input, OnInit } from '@angular/core';
-import { ModalController, IonicModule, ToastController } from '@ionic/angular';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { BusService } from '../../../../services/bus.service';
 import { CommonModule } from '@angular/common';
+import { Component, Input, OnInit } from '@angular/core';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ModalController, IonicModule, ToastController } from '@ionic/angular';
+import { firstValueFrom } from 'rxjs';
+
+import { Bus, BusRoute } from '../../../../models/bus.model';
+import { BusService } from '../../../../services/bus.service';
 
 @Component({
   standalone: true,
@@ -11,13 +14,17 @@ import { CommonModule } from '@angular/common';
   styleUrls: ['./add-bus.component.scss'],
   imports: [IonicModule, CommonModule, ReactiveFormsModule],
 })
-export class AddBusComponent  {
- 
-  @Input() routes: any[] = [];
+export class AddBusComponent implements OnInit {
+  @Input() routes: BusRoute[] = [];
+  @Input() mode: 'create' | 'edit' = 'create';
+  @Input() busToEdit?: Bus;
 
   busForm: FormGroup;
-  currentUser: any = JSON.parse(localStorage.getItem('currentUser') || '{}');
-   constructor(
+  isSaving = false;
+
+  private currentUser: any = JSON.parse(localStorage.getItem('currentUser') || '{}');
+
+  constructor(
     private modalCtrl: ModalController,
     private fb: FormBuilder,
     private busService: BusService,
@@ -26,9 +33,28 @@ export class AddBusComponent  {
     this.busForm = this.fb.group({
       number: ['', Validators.required],
       routeId: ['', Validators.required],
-      capacity: [50, Validators.required],
+      capacity: [50, [Validators.required, Validators.min(1)]],
       placa: ['', Validators.required],
     });
+  }
+
+  ngOnInit(): void {
+    if (this.mode === 'edit' && this.busToEdit) {
+      this.busForm.patchValue({
+        number: this.busToEdit.number,
+        routeId: this.busToEdit.routeId,
+        capacity: this.busToEdit.capacity,
+        placa: this.busToEdit.placa || ''
+      });
+    }
+  }
+
+  get title(): string {
+    return this.mode === 'edit' ? 'Editar Autobús' : 'Agregar Autobús';
+  }
+
+  get primaryButtonLabel(): string {
+    return this.mode === 'edit' ? 'Actualizar' : 'Guardar';
   }
 
   close() {
@@ -36,25 +62,49 @@ export class AddBusComponent  {
   }
 
   async save() {
-    if (this.busForm.invalid) return;
+    if (this.busForm.invalid || this.isSaving) {
+      return;
+    }
 
-    const data = this.busForm.value;
+    this.isSaving = true;
+    const formValue = this.busForm.value;
 
-    await this.busService.registerBus({
-      number: data.number,
-      driverId: this.currentUser.id,
-      routeId: data.routeId,
-      currentLocation: { latitude: 0, longitude: 0 },
-      isActive: false,
-      capacity: data.capacity,
-      placa: data.placa,
-      currentPassengers: 0,
-    }).toPromise();
- 
-    await this.showToast('Autobús registrado exitosamente', 'success');
-    this.modalCtrl.dismiss(true);
+    try {
+      if (this.mode === 'edit' && this.busToEdit) {
+        await firstValueFrom(
+          this.busService.updateBus(this.busToEdit.id, {
+            number: formValue.number,
+            routeId: formValue.routeId,
+            capacity: formValue.capacity,
+            placa: formValue.placa
+          })
+        );
+        await this.showToast('Autobús actualizado exitosamente', 'success');
+      } else {
+        await firstValueFrom(
+          this.busService.registerBus({
+            number: formValue.number,
+            driverId: this.currentUser?.id,
+            routeId: formValue.routeId,
+            currentLocation: { latitude: 0, longitude: 0 },
+            isActive: false,
+            capacity: formValue.capacity,
+            placa: formValue.placa
+          })
+        );
+        await this.showToast('Autobús registrado exitosamente', 'success');
+      }
+
+      this.modalCtrl.dismiss(true);
+    } catch (error) {
+      console.error('Error guardando autobús', error);
+      await this.showToast('No se pudo guardar el autobús', 'danger');
+    } finally {
+      this.isSaving = false;
+    }
   }
-    private async showToast(message: string, color: string) {
+
+  private async showToast(message: string, color: string) {
     const toast = await this.toastController.create({
       message,
       duration: 3000,

@@ -4,6 +4,7 @@ import * as cors from 'cors';
 import * as express from 'express';
 import usuarioRoutes from "./routes/user.routes";
 import busRoutes from "./routes/bus.routes";
+import routeRoutes from "./routes/route.routes";
 
 // Inicializar Firebase Admin
 if (!admin.apps.length) {
@@ -317,6 +318,7 @@ export const registerUser = functions.https.onRequest((req, res) => {
 // 🔹 Prefijo base para tus endpoints
 app.use("/user", usuarioRoutes);
 app.use("/buses", busRoutes);
+app.use("/routes", routeRoutes);
 
 // 🔥 Exporta la API como una única función
 export const api = functions.https.onRequest(app);

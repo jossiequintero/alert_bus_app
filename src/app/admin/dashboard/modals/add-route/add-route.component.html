@@ -1,6 +1,6 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>Nueva Ruta</ion-title>
+    <ion-title>{{ title }}</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="close()">Cerrar</ion-button>
     </ion-buttons>
@@ -20,7 +20,7 @@
       <ion-input formControlName="descripcion" placeholder="Ej. Conecta el centro de Guayaquil con el Mall del Sol"></ion-input>
     </ion-item>
     <ion-item>
-      <ion-label position="stacked">Tiempo Recorrido (aprox):</ion-label>
+      <ion-label position="stacked">Tiempo Recorrido (minutos):</ion-label>
       <ion-input type="number" formControlName="tiempoRecorrido"></ion-input>
     </ion-item>
     
@@ -29,36 +29,50 @@
     <ion-card>
       <ion-card-header>
         <ion-item>
-          <ion-label>Nombre:</ion-label>
-          <ion-input placeholder="Ej. Parque Centenario" [(ngModel)]="stop.nombre"></ion-input>
+          <ion-label position="stacked">Nombre</ion-label>
+          <ion-input placeholder="Ej. Parque Centenario" [(ngModel)]="stop.nombre" [ngModelOptions]="{ standalone: true }"></ion-input>
         </ion-item>
         <ion-item>
-          <ion-label>Descripcion:</ion-label>
-          <ion-input placeholder="Ej. Parada principal en el centro histórico" [(ngModel)]="stop.descripcion"></ion-input>
+          <ion-label position="stacked">Descripción</ion-label>
+          <ion-input placeholder="Ej. Parada principal" [(ngModel)]="stop.descripcion" [ngModelOptions]="{ standalone: true }"></ion-input>
         </ion-item>
         <ion-item>
-          <ion-label>Latitud:</ion-label>
-          <ion-input type="number"[(ngModel)]=stop.latitud></ion-input>
+          <ion-label position="stacked">Latitud</ion-label>
+          <ion-input type="number" [(ngModel)]="stop.latitud" [ngModelOptions]="{ standalone: true }"></ion-input>
         </ion-item>
         <ion-item>
-          <ion-label>Longitud:</ion-label>
-          <ion-input type="number"[(ngModel)]=stop.longitud></ion-input>
+          <ion-label position="stacked">Longitud</ion-label>
+          <ion-input type="number" [(ngModel)]="stop.longitud" [ngModelOptions]="{ standalone: true }"></ion-input>
         </ion-item>
-        <ion-button (click)="addStop()">Agregar parada</ion-button>
+        <ion-item>
+          <ion-label position="stacked">Orden</ion-label>
+          <ion-input type="number" [(ngModel)]="stop.order" [ngModelOptions]="{ standalone: true }"></ion-input>
+        </ion-item>
+        <ion-button expand="block" (click)="addStop()">
+          Agregar parada
+        </ion-button>
       </ion-card-header>
     </ion-card>
-    <ion-list>
+
+    <ion-list *ngIf="stops.length; else emptyStops">
       <ion-item *ngFor="let stopitem of stops; let i = index">
-        Parada: {{ stopitem.nombre}}  , longitud: {{stopitem.latitud}}, longitud: {{stopitem.longitud }}
+        <ion-label>
+          <h3>{{ stopitem.order }}. {{ stopitem.nombre }}</h3>
+          <p>{{ stopitem.descripcion || 'Sin descripción' }}</p>
+          <p>Lat: {{ stopitem.latitud }} · Lng: {{ stopitem.longitud }}</p>
+        </ion-label>
         <ion-button fill="clear" color="danger" (click)="removeStop(i)">
           <ion-icon name="trash"></ion-icon>
         </ion-button>
       </ion-item>
     </ion-list>
+    <ng-template #emptyStops>
+      <ion-text color="medium">No se han agregado paradas.</ion-text>
+    </ng-template>
 
-   
-    <ion-button expand="block" (click)="save()" [disabled]="routeForm.invalid">
-      Guardar Ruta
+    <ion-button expand="block" (click)="save()" [disabled]="routeForm.invalid || !stops.length || isSaving">
+      <ion-spinner slot="start" *ngIf="isSaving"></ion-spinner>
+      {{ primaryButtonLabel }}
     </ion-button>
 
 

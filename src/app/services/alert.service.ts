@@ -66,11 +66,12 @@ export class AlertService {
       buses.subscribe(busList => {
         busList.forEach(bus => {
           if (bus.isActive) {
+            const latitude:number =  bus.currentLocation.latitude ?  bus.currentLocation.latitude : 0;
             const distance = this.geolocationService.calculateDistance(
               userLocation.latitude,
               userLocation.longitude,
               bus.currentLocation.latitude,
-              bus.currentLocation.longitude
+              latitude
             );
 
             // Verificar si el bus está dentro del radio de proximidad

@@ -1,15 +1,22 @@
 import { Router } from "express";
-import { registrarBus, getBusByID, getAllBuses } from "../controllers/bus.controller";
+import {
+  registrarBus,
+  getBusByID,
+  getAllBuses,
+  actualizarBus,
+  eliminarBus,
+  asignarConductor,
+  iniciarSimulacion,
+} from "../controllers/bus.controller";
 
 const router = Router();
 
-// POST /buses/registrar
-router.post("/registrar", registrarBus);
-
-// GET /buses/:id
-router.get("/:id", getBusByID);
-
-// GET /buses
 router.get("/", getAllBuses);
+router.post("/registrar", registrarBus);
+router.post("/assign-driver", asignarConductor);
+router.post("/start-simulation", iniciarSimulacion);
+router.get("/:id", getBusByID);
+router.put("/:id", actualizarBus);
+router.delete("/:id", eliminarBus);
 
 export default router;

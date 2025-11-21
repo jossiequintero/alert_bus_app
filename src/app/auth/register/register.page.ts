@@ -50,6 +50,7 @@ export class RegisterPage implements OnInit {
         this.isLoading = false;
         
         await this.showToast(`¡Bienvenido ${user?.nombre || 'Usuario'}!`, 'success');
+        this.registerForm.reset();
         this.redirectBasedOnRole();
       } catch (error) {
         this.isLoading = false;

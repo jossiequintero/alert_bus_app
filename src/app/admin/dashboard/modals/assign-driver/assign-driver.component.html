@@ -10,24 +10,25 @@
 <ion-content class="ion-padding">
 
   <ion-item>
-    <ion-label>Bus</ion-label>
-    <ion-select>
+    <ion-label position="stacked">Bus</ion-label>
+    <ion-select [(ngModel)]="selectedBusId" placeholder="Selecciona un bus" interface="popover">
       <ion-select-option *ngFor="let b of buses" [value]="b.id">
-        {{ b.number }}
+        {{ b.number }} · {{ b.placa || 'Sin placa' }}
       </ion-select-option>
     </ion-select>
   </ion-item>
 
   <ion-item>
-    <ion-label>Conductor</ion-label>
-    <ion-select>
+    <ion-label position="stacked">Conductor</ion-label>
+    <ion-select [(ngModel)]="selectedDriverId" placeholder="Selecciona un conductor" interface="popover">
       <ion-select-option *ngFor="let d of drivers" [value]="d.id">
-        {{ d.nombre }}
+        {{ d.nombre }} ({{ d.correo }})
       </ion-select-option>
     </ion-select>
   </ion-item>
 
-  <ion-button expand="block" (click)="assign()">
+  <ion-button expand="block" (click)="assign()" [disabled]="!selectedBusId || !selectedDriverId || isSubmitting">
+    <ion-spinner slot="start" *ngIf="isSubmitting"></ion-spinner>
     Asignar
   </ion-button>
 

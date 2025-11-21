@@ -1,16 +1,16 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { ModalController, ToastController } from '@ionic/angular';
-import { AuthService } from '../../services/auth.service';
-import { GeolocationService, Location } from '../../services/geolocation.service';
-import { BusService } from '../../services/bus.service';
-import { Bus, BusRoute } from '../../models/bus.model';
-import { User } from '../../models/user.model';
+import { AlertController, ModalController, ToastController } from '@ionic/angular';
 import { Subscription } from 'rxjs';
+
 import { AddBusComponent } from './modals/add-bus/add-bus.component';
 import { AddRouteComponent } from './modals/add-route/add-route.component';
 import { AssignDriverComponent } from './modals/assign-driver/assign-driver.component';
+import { Bus, BusRoute } from '../../models/bus.model';
+import { User } from '../../models/user.model';
+import { AuthService } from '../../services/auth.service';
+import { BusService } from '../../services/bus.service';
+import { UserService } from '../../services/user.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -20,32 +20,29 @@ import { AssignDriverComponent } from './modals/assign-driver/assign-driver.comp
 })
 export class DashboardPage implements OnInit, OnDestroy {
   currentUser: User | null = null;
-  currentBus: Bus | null = null;
-  currentRoute: BusRoute | null = null;
-  currentLocation: Location | null = null;
+  buses: Bus[] = [];
   routes: BusRoute[] = [];
-  isUpdating = false;
-  isUpdatingLocation = false;
-  isRegistering = false;
-  
-  busForm: FormGroup;
+  drivers: User[] = [];
+
+  selectedSection: 'buses' | 'routes' | 'drivers' = 'buses';
+  loadingBuses = false;
+  loadingRoutes = false;
+  loadingDrivers = false;
+  startingSimulation: Record<string, boolean> = {};
+  deletingBus: Record<string, boolean> = {};
+  deletingRoute: Record<string, boolean> = {};
+
   private subscriptions: Subscription[] = [];
 
   constructor(
     private authService: AuthService,
-    private geolocationService: GeolocationService,
     private busService: BusService,
-    private formBuilder: FormBuilder,
+    private userService: UserService,
     private router: Router,
     private toastController: ToastController,
-    private modalCtrl: ModalController
-  ) {
-    this.busForm = this.formBuilder.group({
-      number: ['', [Validators.required]],
-      routeId: ['', [Validators.required]],
-      capacity: [50, [Validators.required, Validators.min(1), Validators.max(100)]]
-    });
-  }
+    private modalCtrl: ModalController,
+    private alertController: AlertController
+  ) {}
 
   ngOnInit() {
     this.currentUser = this.authService.getCurrentUser();
@@ -55,143 +52,257 @@ export class DashboardPage implements OnInit, OnDestroy {
       return;
     }
 
-    this.loadRoutes();
-    this.loadCurrentBus();
-    this.loadCurrentLocation();
-    this.subscribeToLocationUpdates();
+    this.observeBuses();
+    this.observeRoutes();
+    this.loadDrivers();
+    this.refreshBuses();
+    this.refreshRoutes();
   }
 
   ngOnDestroy() {
     this.subscriptions.forEach(sub => sub.unsubscribe());
   }
 
-  private loadRoutes() {
-    const routesSub = this.busService.getRoutes().subscribe(routes => {
-      this.routes = routes.filter(route => route.isActive);
-    });
-    this.subscriptions.push(routesSub);
-  }
-
-  private loadCurrentBus() {
+  private observeBuses() {
     const busesSub = this.busService.getBuses().subscribe(buses => {
-      // Buscar el autobús del chofer actual
-      this.currentBus = buses.find(bus => bus.driverId === this.currentUser?.id) || null;
-      
-      if (this.currentBus) {
-        this.currentRoute = this.busService.getRouteById(this.currentBus.routeId) || null;
-      }
+      this.buses = buses;
     });
     this.subscriptions.push(busesSub);
   }
 
-  async loadCurrentLocation() {
-    try {
-      this.currentLocation = await this.geolocationService.getCurrentPosition();
-    } catch (error) {
-      console.error('Error obteniendo ubicación:', error);
-      await this.showToast('Error obteniendo ubicación', 'danger');
-    }
+  private observeRoutes() {
+    const routesSub = this.busService.getRoutes().subscribe(routes => {
+      this.routes = routes;
+    });
+    this.subscriptions.push(routesSub);
   }
 
-  private subscribeToLocationUpdates() {
-    const locationSub = this.geolocationService.currentLocation$.subscribe(location => {
-      if (location) {
-        this.currentLocation = location;
-        if (this.currentBus) {
-          this.updateBusLocation();
-        }
+  private loadDrivers() {
+    this.loadingDrivers = true;
+    const driversSub = this.userService.getDrivers().subscribe({
+      next: drivers => {
+        this.drivers = drivers;
+        this.loadingDrivers = false;
+      },
+      error: async () => {
+        this.loadingDrivers = false;
+        await this.showToast('No se pudieron cargar los conductores', 'danger');
       }
     });
-    this.subscriptions.push(locationSub);
+    this.subscriptions.push(driversSub);
   }
 
-  async updateLocation() {
-    this.isUpdatingLocation = true;
-    try {
-      this.currentLocation = await this.geolocationService.getCurrentPosition();
-      if (this.currentBus) {
-        this.updateBusLocation();
+  refreshBuses() {
+    if (this.loadingBuses) {
+      return;
+    }
+    this.loadingBuses = true;
+    this.busService.refreshBuses().subscribe({
+      next: () => {
+        this.loadingBuses = false;
+      },
+      error: async () => {
+        this.loadingBuses = false;
+        await this.showToast('No se pudieron cargar los buses', 'danger');
       }
-      await this.showToast('Ubicación actualizada', 'success');
-    } catch (error) {
-      console.error('Error actualizando ubicación:', error);
-      await this.showToast('Error actualizando ubicación', 'danger');
-    } finally {
-      this.isUpdatingLocation = false;
-    }
+    });
   }
 
-  private updateBusLocation() {
-    if (this.currentBus && this.currentLocation) {
-      this.busService.updateBusLocation(
-        this.currentBus.id,
-        this.currentLocation.latitude,
-        this.currentLocation.longitude
-      );
+  refreshRoutes() {
+    if (this.loadingRoutes) {
+      return;
     }
-  }
-
-  async registerBus() {
-    if (this.busForm.valid && this.currentUser) {
-      this.isRegistering = true;
-      const { number, routeId, capacity } = this.busForm.value;
-
-      try {
-        const newBus = await this.busService.registerBus({
-          number,
-          driverId: this.currentUser.id,
-          routeId,
-          currentLocation: this.currentLocation || { latitude: 0, longitude: 0 },
-          isActive: false,
-          capacity,
-          currentPassengers: 0
-        }).toPromise();
-
-        this.currentBus = newBus || null;
-        this.currentRoute = newBus ? this.busService.getRouteById(newBus.routeId) || null : null;
-        this.busForm.reset();
-        
-        await this.showToast('Autobús registrado exitosamente', 'success');
-      } catch (error) {
-        console.error('Error registrando autobús:', error);
-        await this.showToast('Error registrando autobús', 'danger');
-      } finally {
-        this.isRegistering = false;
+    this.loadingRoutes = true;
+    this.busService.refreshRoutes().subscribe({
+      next: () => {
+        this.loadingRoutes = false;
+      },
+      error: async () => {
+        this.loadingRoutes = false;
+        await this.showToast('No se pudieron cargar las rutas', 'danger');
       }
+    });
+  }
+
+  async openAddBusModal(mode: 'create' | 'edit' = 'create', bus?: Bus) {
+    const modal = await this.modalCtrl.create({
+      component: AddBusComponent,
+      componentProps: {
+        routes: this.routes,
+        mode,
+        busToEdit: bus
+      }
+    });
+    await modal.present();
+    const { data } = await modal.onWillDismiss();
+    if (data) {
+      this.refreshBuses();
     }
   }
 
-  async toggleBusStatus() {
-    if (!this.currentBus) return;
-
-    this.isUpdating = true;
-    try {
-      // Simular cambio de estado
-      this.currentBus.isActive = !this.currentBus.isActive;
-      await this.showToast(
-        `Servicio ${this.currentBus.isActive ? 'iniciado' : 'detenido'}`, 
-        'success'
-      );
-    } catch (error) {
-      console.error('Error cambiando estado del autobús:', error);
-      await this.showToast('Error cambiando estado', 'danger');
-    } finally {
-      this.isUpdating = false;
+  async openAddRouteModal(mode: 'create' | 'edit' = 'create', route?: BusRoute) {
+    const modal = await this.modalCtrl.create({
+      component: AddRouteComponent,
+      componentProps: {
+        mode,
+        routeToEdit: route
+      }
+    });
+    await modal.present();
+    const { data } = await modal.onWillDismiss();
+    if (data) {
+      this.refreshRoutes();
     }
   }
 
-  async markStopArrival(stop: any) {
-    try {
-      await this.showToast(`Llegada marcada en ${stop.name}`, 'success');
-    } catch (error) {
-      console.error('Error marcando llegada:', error);
-      await this.showToast('Error marcando llegada', 'danger');
+  async openAssignDriverModal() {
+    if (!this.buses.length || !this.drivers.length) {
+      await this.showToast('Necesitas buses y conductores para asignar', 'warning');
+      return;
     }
+
+    const modal = await this.modalCtrl.create({
+      component: AssignDriverComponent,
+      componentProps: {
+        buses: this.buses,
+        drivers: this.drivers
+      }
+    });
+    await modal.present();
+    const { data } = await modal.onWillDismiss();
+
+    if (data?.refresh) {
+      this.refreshBuses();
+    }
+  }
+
+  async deleteBus(bus: Bus) {
+    const alert = await this.alertController.create({
+      header: 'Eliminar bus',
+      message: `¿Seguro deseas eliminar el bus ${bus.number}?`,
+      buttons: [
+        {
+          text: 'Cancelar',
+          role: 'cancel'
+        },
+        {
+          text: 'Eliminar',
+          cssClass: 'danger',
+          handler: async () => {
+            this.deletingBus[bus.id] = true;
+            this.busService.deleteBus(bus.id).subscribe({
+              next: async () => {
+                delete this.deletingBus[bus.id];
+                await this.showToast('Bus eliminado correctamente', 'success');
+              },
+              error: async () => {
+                delete this.deletingBus[bus.id];
+                await this.showToast('No se pudo eliminar el bus', 'danger');
+              }
+            });
+          }
+        }
+      ]
+    });
+
+    await alert.present();
+  }
+
+  async deleteRoute(route: BusRoute) {
+    const alert = await this.alertController.create({
+      header: 'Eliminar ruta',
+      message: `¿Seguro deseas eliminar la ruta ${route.name}?`,
+      buttons: [
+        {
+          text: 'Cancelar',
+          role: 'cancel'
+        },
+        {
+          text: 'Eliminar',
+          cssClass: 'danger',
+          handler: () => {
+            this.deletingRoute[route.id] = true;
+            this.busService.deleteRoute(route.id).subscribe({
+              next: async () => {
+                delete this.deletingRoute[route.id];
+                await this.showToast('Ruta eliminada correctamente', 'success');
+              },
+              error: async () => {
+                delete this.deletingRoute[route.id];
+                await this.showToast('No se pudo eliminar la ruta', 'danger');
+              }
+            });
+          }
+        }
+      ]
+    });
+
+    await alert.present();
+  }
+
+  async startSimulation(bus: Bus) {
+    if (!bus.routeId) {
+      await this.showToast('El bus no tiene una ruta asignada', 'warning');
+      return;
+    }
+
+    this.startingSimulation[bus.id] = true;
+    this.busService.startSimulation(bus.id, bus.routeId, this.currentUser?.id ?? '').subscribe({
+      next: async () => {
+        this.startingSimulation[bus.id] = false;
+        await this.showToast('Simulación iniciada correctamente', 'success');
+      },
+      error: async () => {
+        this.startingSimulation[bus.id] = false;
+        await this.showToast('No se pudo iniciar la simulación', 'danger');
+      }
+    });
   }
 
   getRouteName(routeId: string): string {
-    const route = this.busService.getRouteById(routeId);
-    return route ? route.name : 'Ruta desconocida';
+    const route = this.routes.find(r => r.id === routeId);
+    return route ? route.name : 'Sin ruta';
+  }
+
+  getDriverName(driverId?: string | null): string {
+    if (!driverId) {
+      return 'Sin asignar';
+    }
+    const driver = this.drivers.find(d => d.id === driverId);
+    return driver ? driver.nombre || driver.correo : 'Sin asignar';
+  }
+
+  async openSimulationPrompt() {
+    if (!this.buses.length) {
+      await this.showToast('No hay buses disponibles para simular', 'warning');
+      return;
+    }
+
+    const alert = await this.alertController.create({
+      header: 'Iniciar simulación',
+      inputs: this.buses.map(bus => ({
+        type: 'radio',
+        label: `${bus.number} · ${this.getRouteName(bus.routeId)}`,
+        value: bus.id
+      })),
+      buttons: [
+        {
+          text: 'Cancelar',
+          role: 'cancel'
+        },
+        {
+          text: 'Iniciar',
+          handler: (busId: string) => {
+            const bus = this.buses.find(item => item.id === busId);
+            if (bus) {
+              this.startSimulation(bus);
+            }
+          }
+        }
+      ]
+    });
+
+    await alert.present();
   }
 
   async logout() {
@@ -208,49 +319,8 @@ export class DashboardPage implements OnInit, OnDestroy {
       position: 'top'
     });
     await toast.present();
-  }
-  async openAddBusModal() {
-  const modal = await this.modalCtrl.create({
-    component: AddBusComponent,
-    componentProps: {
-      currentUser: this.currentUser,
-      routes: this.routes
-    }
-  });
-  await modal.present();
 }
-async openAddRouteModal() {
-  console.log('modal route');
-  
-  const modal = await this.modalCtrl.create({
-    component: AddRouteComponent
-  });
-  await modal.present();
-
-  const { data } = await modal.onWillDismiss();
-
-  if (data) {
-    //this.busService.addRoute(data);
-  }
-  console.log({data_desde_modal:data});
-  
-}
-
-async openAssignDriverModal() {
-  const modal = await this.modalCtrl.create({
-    component: AssignDriverComponent,
-    componentProps: {
-      // buses: this.busService.buses,
-      // drivers: this.busService.drivers
-    }
-  });
-  modal.present();
-  const { data } = await modal.onWillDismiss();
-
-  if (data) {
-    // await this.busService.updateBus(data.busId, {
-    //   driverId: data.driverId
-    // });
-  }
+  public getBusAsignado(driverId: string) {
+    return this.buses.find(bus => bus.driverId === driverId)?.number || 'Sin asignar';
 }
 }

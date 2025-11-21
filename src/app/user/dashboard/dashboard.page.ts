@@ -112,20 +112,26 @@ export class DashboardPage implements OnInit, OnDestroy {
     if (!this.currentLocation) return;
 
     this.busService.buses$.subscribe(buses => {
-      this.nearbyBuses = buses
+      const busesWithLocation = buses.filter(
+        (bus): bus is Bus & { currentLocation: { latitude: number; longitude: number } } =>
+          !!bus.currentLocation
+      );
+
+      this.nearbyBuses = busesWithLocation
         .filter(bus => bus.isActive)
         .map(bus => {
+          const { latitude, longitude } = bus.currentLocation;
           const distance = this.geolocationService.calculateDistance(
             this.currentLocation!.latitude,
             this.currentLocation!.longitude,
-            bus.currentLocation.latitude,
-            bus.currentLocation.longitude
+            latitude,
+            longitude
           );
           return { ...bus, distance };
         })
-        .filter(bus => bus.distance <= 1000) // Solo buses dentro de 1km
+        .filter(bus => bus.distance <= 1000)
         .sort((a, b) => a.distance - b.distance)
-        .slice(0, 5); // Máximo 5 buses cercanos
+        .slice(0, 5);
     });
   }
 
