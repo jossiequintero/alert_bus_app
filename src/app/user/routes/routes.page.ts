@@ -4,6 +4,7 @@ import { ToastController } from '@ionic/angular';
 import { BusService } from '../../services/bus.service';
 import { AlertService } from '../../services/alert.service';
 import { AuthService } from '../../services/auth.service';
+import { GeolocationService } from '../../services/geolocation.service';
 import { BusRoute, Bus, BusStop } from '../../models/bus.model';
 import { User } from '../../models/user.model';
 import { Subscription } from 'rxjs';
@@ -62,6 +63,7 @@ export class RoutesPage implements OnInit, OnDestroy {
     private busService: BusService,
     private alertService: AlertService,
     private authService: AuthService,
+    private geolocationService: GeolocationService,
     private router: Router,
     private toastController: ToastController
   ) {}
@@ -117,29 +119,38 @@ export class RoutesPage implements OnInit, OnDestroy {
     if (!this.currentUser || !this.selectedRoute) return;
 
     try {
-      // Crear una alerta de proximidad para esta parada
-      const alert = {
-        id: this.generateId(),
-        userId: this.currentUser.id,
-        busId: '', // Se determinará cuando un bus esté cerca
-        stopId: stop.id,
-        routeId: this.selectedRoute.id,
-        alertType: 'proximity' as const,
-        message: `Te notificaremos cuando un autobús esté cerca de ${stop.name}`,
-        isRead: false,
-        createdAt: new Date()
-      };
+      // Obtener ubicación actual del usuario
+      let userLocation = null;
+      
+      try {
+        userLocation = await this.geolocationService.getCurrentPosition();
+      } catch (error) {
+        console.warn('No se pudo obtener ubicación del usuario:', error);
+      }
 
-      await this.showToast(`Alerta configurada para ${stop.name}`, 'success');
+      // Crear una alerta de parada usando el servicio
+      this.alertService.createStopAlert(
+        this.currentUser.id,
+        this.selectedRoute.id,
+        stop.id,
+        stop.name,
+        userLocation?.latitude,
+        userLocation?.longitude
+      ).subscribe({
+        next: (alert) => {
+          this.showToast(`Alerta configurada para ${stop.name}. Serás notificado cuando un bus esté cerca.`, 'success');
+        },
+        error: (error) => {
+          console.error('Error configurando alerta:', error);
+          this.showToast('Error configurando alerta', 'danger');
+        }
+      });
     } catch (error) {
       console.error('Error configurando alerta:', error);
       await this.showToast('Error configurando alerta', 'danger');
     }
   }
 
-  private generateId(): string {
-    return Math.random().toString(36).substr(2, 9);
-  }
 
   private async showToast(message: string, color: string) {
     const toast = await this.toastController.create({

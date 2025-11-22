@@ -53,15 +53,32 @@
         <p>Latitud: {{ currentLocation?.latitude | number:'1.6-6' }}</p>
         <p>Longitud: {{ currentLocation?.longitude | number:'1.6-6' }}</p>
         <p>Precisión: {{ currentLocation?.accuracy | number:'1.0-0' }}m</p>
-        <ion-button 
-          fill="outline" 
-          size="small" 
-          (click)="updateLocation()"
-          [disabled]="isUpdatingLocation">
-          <ion-spinner *ngIf="isUpdatingLocation" name="crescent"></ion-spinner>
-          <ion-icon *ngIf="!isUpdatingLocation" name="refresh-outline"></ion-icon>
-          Actualizar Ubicación
-        </ion-button>
+        <p *ngIf="isTrackingLocation">
+          <ion-badge color="success">
+            <ion-icon name="radio-button-on"></ion-icon>
+            Siguiendo ubicación en tiempo real
+          </ion-badge>
+        </p>
+        <div class="ion-margin-top">
+          <ion-button 
+            fill="outline" 
+            size="small" 
+            (click)="updateLocation()"
+            [disabled]="isUpdatingLocation">
+            <ion-spinner *ngIf="isUpdatingLocation" name="crescent"></ion-spinner>
+            <ion-icon *ngIf="!isUpdatingLocation" name="refresh-outline"></ion-icon>
+            Actualizar Ubicación
+          </ion-button>
+
+          <ion-button 
+            fill="outline" 
+            size="small"
+            [color]="isTrackingLocation ? 'success' : 'medium'"
+            (click)="toggleLocationTracking()">
+            <ion-icon [name]="isTrackingLocation ? 'radio-button-on' : 'radio-button-off'"></ion-icon>
+            {{ isTrackingLocation ? 'Detener' : 'Iniciar' }} Seguimiento
+          </ion-button>
+        </div>
         
       </ion-card-content>
    
@@ -87,6 +104,7 @@
             #marker="mapMarker"
             [position]="markerPosition"
             [title]="markerTitle"
+            [options]="markerOptions"
             (mapClick)="openInfoWindow(marker)">
           </map-marker>
 

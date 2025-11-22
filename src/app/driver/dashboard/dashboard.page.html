@@ -53,6 +53,35 @@
           <p>Lat: {{ currentLocation.latitude | number:'1.6-6' }}</p>
           <p>Lng: {{ currentLocation.longitude | number:'1.6-6' }}</p>
           <p>Precisión: {{ currentLocation.accuracy | number:'1.0-0' }}m</p>
+          <p *ngIf="isTrackingLocation">
+            <ion-badge color="success">
+              <ion-icon name="radio-button-on"></ion-icon>
+              Siguiendo ubicación en tiempo real
+            </ion-badge>
+          </p>
+        </div>
+
+        <!-- Mapa en tiempo real -->
+        <div class="map-container" *ngIf="currentLocation" style="width: 100%; height: 300px; margin-top: 16px;">
+          <google-map 
+            height="100%"
+            width="100%"
+            [zoom]="zoom"
+            [center]="center"
+            [options]="{
+              mapTypeId: 'roadmap',
+              zoomControl: true,
+              scrollwheel: true,
+              disableDoubleClickZoom: false
+            }">
+            <map-marker
+              #marker="mapMarker"
+              [position]="markerPosition"
+              [title]="markerTitle"
+              [options]="markerOptions"
+              (mapClick)="openInfoWindow(marker)">
+            </map-marker>
+          </google-map>
         </div>
 
         <div class="bus-actions">
@@ -71,6 +100,14 @@
             <ion-spinner *ngIf="isUpdatingLocation" name="crescent"></ion-spinner>
             <ion-icon *ngIf="!isUpdatingLocation" name="refresh-outline"></ion-icon>
             Actualizar Ubicación
+          </ion-button>
+
+          <ion-button 
+            fill="outline"
+            [color]="isTrackingLocation ? 'success' : 'medium'"
+            (click)="toggleLocationTracking()">
+            <ion-icon [name]="isTrackingLocation ? 'radio-button-on' : 'radio-button-off'"></ion-icon>
+            {{ isTrackingLocation ? 'Detener Seguimiento' : 'Iniciar Seguimiento' }}
           </ion-button>
         </div>
       </ion-card-content>

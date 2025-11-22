@@ -42,13 +42,16 @@ export class LoginPage implements OnInit {
 
       try {
         const user = await this.authService.login(email, password).toPromise();
-        this.isLoading = false;
         await this.showToast(`¡Bienvenido ${user?.nombre || 'Usuario'}!`, 'success');
+        this.isLoading = false;
         this.loginForm.reset();
         this.redirectBasedOnRole();
       } catch (error) {
-        this.isLoading = false;
         await this.showToast('Error al iniciar sesión', 'danger');
+      }
+      finally {
+        this.isLoading = false;
+        this.loginForm.reset();
       }
     }
   }

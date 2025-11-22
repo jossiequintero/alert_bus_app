@@ -59,6 +59,29 @@ export class BusService {
       };
       this.busesSubject.next(buses);
     }
+
+    // Actualizar ubicación en Firebase para verificar alertas
+    this.updateBusLocationInFirebase(busId, latitude, longitude).subscribe({
+      next: (response) => {
+        if (response.success) {
+          console.log(`Ubicación del bus ${busId} actualizada en Firebase`);
+        }
+      },
+      error: (error) => {
+        console.error('Error actualizando ubicación del bus en Firebase:', error);
+      }
+    });
+  }
+
+  /**
+   * Actualizar ubicación del bus en Firebase
+   */
+  private updateBusLocationInFirebase(busId: string, latitude: number, longitude: number): Observable<ApiResponse<any>> {
+    return this.http.post<ApiResponse<any>>(`${this.apiUrl}buses/update-location`, {
+      busId,
+      latitude,
+      longitude
+    });
   }
 
   refreshBuses(): Observable<Bus[]> {

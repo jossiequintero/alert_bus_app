@@ -7,6 +7,7 @@ import {
   eliminarBus,
   asignarConductor,
   iniciarSimulacion,
+  actualizarUbicacionBus,
 } from "../controllers/bus.controller";
 
 const router = Router();
@@ -15,6 +16,7 @@ router.get("/", getAllBuses);
 router.post("/registrar", registrarBus);
 router.post("/assign-driver", asignarConductor);
 router.post("/start-simulation", iniciarSimulacion);
+router.post("/update-location", actualizarUbicacionBus);
 router.get("/:id", getBusByID);
 router.put("/:id", actualizarBus);
 router.delete("/:id", eliminarBus);

@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, interval } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
 import { Alert, AlertSettings } from '../models/alert.model';
 import { Bus } from '../models/bus.model';
 import { BusStop } from '../models/bus.model';
@@ -7,6 +8,14 @@ import { GeolocationService } from './geolocation.service';
 import { BusService } from './bus.service';
 import { AuthService } from './auth.service';
 import { LocalNotifications } from '@capacitor/local-notifications';
+import { environment } from 'src/environments/environment';
+
+interface ApiResponse<T> {
+  success: boolean;
+  data: T;
+  message?: string;
+  error?: string;
+}
 
 @Injectable({
   providedIn: 'root'
@@ -19,14 +28,40 @@ export class AlertService {
   public alertSettings$ = this.alertSettingsSubject.asObservable();
 
   private proximityCheckInterval: any;
+  private readonly apiUrl = environment.apiUrl;
 
   constructor(
     private geolocationService: GeolocationService,
     private busService: BusService,
-    private authService: AuthService
+    private authService: AuthService,
+    private http: HttpClient
   ) {
-    this.initializeDefaultSettings();
+    this.loadAlertSettings();
     this.startProximityMonitoring();
+  }
+
+  /**
+   * Cargar configuración de alertas desde Firebase
+   */
+  loadAlertSettings(): void {
+    const user = this.authService.getCurrentUser();
+    if (!user) return;
+
+    this.http.get<ApiResponse<AlertSettings>>(`${this.apiUrl}user/alert-settings/${user.id}`).subscribe({
+      next: (response) => {
+        if (response.success && response.data) {
+          this.alertSettingsSubject.next(response.data);
+        } else {
+          // Si no existe, crear configuración por defecto
+          this.initializeDefaultSettings();
+        }
+      },
+      error: (error) => {
+        console.error('Error cargando configuración de alertas:', error);
+        // En caso de error, usar configuración por defecto
+        this.initializeDefaultSettings();
+      }
+    });
   }
 
   private initializeDefaultSettings(): void {
@@ -41,7 +76,22 @@ export class AlertService {
         vibrationEnabled: true
       };
       this.alertSettingsSubject.next(defaultSettings);
+      // Guardar en Firebase
+      this.saveAlertSettingsToFirebase(defaultSettings);
     }
+  }
+
+  private saveAlertSettingsToFirebase(settings: AlertSettings): void {
+    this.http.post<ApiResponse<AlertSettings>>(`${this.apiUrl}user/alert-settings`, settings).subscribe({
+      next: (response) => {
+        if (response.success) {
+          console.log('Configuración de alertas guardada en Firebase');
+        }
+      },
+      error: (error) => {
+        console.error('Error guardando configuración de alertas:', error);
+      }
+    });
   }
 
   private startProximityMonitoring(): void {
@@ -139,7 +189,29 @@ export class AlertService {
     }
   }
 
+  /**
+   * Obtener alertas del usuario desde Firebase
+   */
   getAlertsForUser(userId: string): Observable<Alert[]> {
+    // Primero cargar desde Firebase
+    this.http.get<ApiResponse<Alert[]>>(`${this.apiUrl}user/alerts/${userId}`).subscribe({
+      next: (response) => {
+        if (response.success && response.data) {
+          // Convertir fechas de string a Date
+          const alerts = response.data.map(alert => ({
+            ...alert,
+            createdAt: alert.createdAt instanceof Date ? alert.createdAt : new Date(alert.createdAt),
+            triggeredAt: alert.triggeredAt ? (alert.triggeredAt instanceof Date ? alert.triggeredAt : new Date(alert.triggeredAt)) : undefined
+          }));
+          this.alertsSubject.next(alerts);
+        }
+      },
+      error: (error) => {
+        console.error('Error cargando alertas:', error);
+      }
+    });
+
+    // Retornar observable local
     return new Observable(observer => {
       this.alerts$.subscribe(alerts => {
         const userAlerts = alerts.filter(alert => alert.userId === userId);
@@ -148,18 +220,85 @@ export class AlertService {
     });
   }
 
+  /**
+   * Marcar alerta como leída en Firebase
+   */
   markAlertAsRead(alertId: string): void {
-    const alerts = this.alertsSubject.value;
-    const alertIndex = alerts.findIndex(alert => alert.id === alertId);
-    
-    if (alertIndex !== -1) {
-      alerts[alertIndex].isRead = true;
-      this.alertsSubject.next([...alerts]);
-    }
+    this.http.put<ApiResponse<any>>(`${this.apiUrl}user/alerts/${alertId}/read`, {}).subscribe({
+      next: (response) => {
+        if (response.success) {
+          const alerts = this.alertsSubject.value;
+          const alertIndex = alerts.findIndex(alert => alert.id === alertId);
+          
+          if (alertIndex !== -1) {
+            alerts[alertIndex].isRead = true;
+            this.alertsSubject.next([...alerts]);
+          }
+        }
+      },
+      error: (error) => {
+        console.error('Error marcando alerta como leída:', error);
+        // Actualizar localmente aunque falle
+        const alerts = this.alertsSubject.value;
+        const alertIndex = alerts.findIndex(alert => alert.id === alertId);
+        
+        if (alertIndex !== -1) {
+          alerts[alertIndex].isRead = true;
+          this.alertsSubject.next([...alerts]);
+        }
+      }
+    });
   }
 
+  /**
+   * Actualizar configuración de alertas y guardar en Firebase
+   */
   updateAlertSettings(settings: AlertSettings): void {
     this.alertSettingsSubject.next(settings);
+    this.saveAlertSettingsToFirebase(settings);
+  }
+
+  /**
+   * Crear alerta para una parada específica
+   */
+  createStopAlert(
+    userId: string, 
+    routeId: string, 
+    stopId: string, 
+    stopName: string,
+    userLatitude?: number | null,
+    userLongitude?: number | null
+  ): Observable<Alert> {
+    return new Observable(observer => {
+      this.http.post<ApiResponse<Alert>>(`${this.apiUrl}user/alerts/create-stop-alert`, {
+        userId,
+        routeId,
+        stopId,
+        stopName,
+        userLatitude: userLatitude || null,
+        userLongitude: userLongitude || null
+      }).subscribe({
+        next: (response) => {
+          if (response.success && response.data) {
+            const alert = {
+              ...response.data,
+              createdAt: response.data.createdAt instanceof Date ? response.data.createdAt : new Date(response.data.createdAt)
+            };
+            // Agregar a la lista local
+            const alerts = this.alertsSubject.value;
+            this.alertsSubject.next([...alerts, alert]);
+            observer.next(alert);
+            observer.complete();
+          } else {
+            observer.error(new Error(response.error || 'Error creando alerta'));
+          }
+        },
+        error: (error) => {
+          console.error('Error creando alerta de parada:', error);
+          observer.error(error);
+        }
+      });
+    });
   }
 
   createArrivalAlert(userId: string, busId: string, stopId: string, estimatedArrival: Date): void {

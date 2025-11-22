@@ -14,7 +14,7 @@
       <p>Recibe alertas cuando tu autobús esté cerca</p>
     </div>
 
-    <form [formGroup]="registerForm" (ngSubmit)="onRegister()">
+    <form [formGroup]="registerForm">
       <ion-item>
         <ion-label position="stacked">Nombre</ion-label>
         <ion-input 
@@ -81,10 +81,10 @@
         expand="block"
         type="button"
         (click)="onRegister()"
-        [disabled]="registerForm.invalid || isLoading"
+        [disabled]="registerForm.invalid || isLoadingRegister"
         class="ion-margin-top">
-        <ion-spinner *ngIf="isLoading" name="crescent"></ion-spinner>
-        <span *ngIf="!isLoading">Registrarse</span>
+        <ion-spinner *ngIf="isLoadingRegister" name="crescent"></ion-spinner>
+        <span *ngIf="!isLoadingRegister">Registrarse</span>
       </ion-button>
     </form>
 
@@ -93,7 +93,7 @@
         fill="clear" 
         (click)="toggleMode()"
         [routerLink]="['/auth/login']"
-        [disabled]="isLoading">
+        [disabled]="isLoadingRegister">
         ¿Ya tienes una cuenta?
       </ion-button>
     </div>

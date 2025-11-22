@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 import { IonicModule } from '@ionic/angular';
+import { GoogleMapsModule } from '@angular/google-maps';
 
 import { DashboardPageRoutingModule } from './dashboard-routing.module';
 
@@ -14,7 +15,8 @@ import { DashboardPage } from './dashboard.page';
     FormsModule,
     ReactiveFormsModule,
     IonicModule,
-    DashboardPageRoutingModule
+    DashboardPageRoutingModule,
+    GoogleMapsModule
   ],
   declarations: [DashboardPage]
 })

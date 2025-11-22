@@ -52,8 +52,17 @@ export class AlertsPage implements OnInit, OnDestroy {
   private loadAlerts() {
     if (!this.currentUser) return;
 
-    const alertsSub = this.alertService.getAlertsForUser(this.currentUser.id).subscribe(alerts => {
-      this.alerts = alerts.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    const alertsSub = this.alertService.getAlertsForUser(this.currentUser.id).subscribe({
+      next: (alerts) => {
+        this.alerts = alerts.sort((a, b) => {
+          const dateA = a.createdAt instanceof Date ? a.createdAt : new Date(a.createdAt);
+          const dateB = b.createdAt instanceof Date ? b.createdAt : new Date(b.createdAt);
+          return dateB.getTime() - dateA.getTime();
+        });
+      },
+      error: (error) => {
+        console.error('Error cargando alertas:', error);
+      }
     });
     this.subscriptions.push(alertsSub);
   }
@@ -61,20 +70,23 @@ export class AlertsPage implements OnInit, OnDestroy {
   private loadAlertSettings() {
     const settingsSub = this.alertService.alertSettings$.subscribe(settings => {
       if (settings) {
-        this.alertSettings = settings;
+        this.alertSettings = { ...settings };
       }
     });
     this.subscriptions.push(settingsSub);
   }
 
-  updateAlertSettings() {
+  async updateAlertSettings() {
+    if (!this.currentUser) return;
+    
+    this.alertSettings.userId = this.currentUser.id;
     this.alertService.updateAlertSettings(this.alertSettings);
-    this.showToast('Configuración actualizada', 'success');
+    await this.showToast('Configuración actualizada', 'success');
   }
 
-  markAsRead(alertId: string) {
+  async markAsRead(alertId: string) {
     this.alertService.markAlertAsRead(alertId);
-    this.showToast('Alerta marcada como leída', 'success');
+    await this.showToast('Alerta marcada como leída', 'success');
   }
 
   getAlertColor(alertType: string): string {

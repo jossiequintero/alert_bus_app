@@ -14,7 +14,7 @@
       <p>Recibe alertas cuando tu autobús esté cerca</p>
     </div>
 
-    <form [formGroup]="loginForm" (ngSubmit)="onLogin()">
+    <form [formGroup]="loginForm">
       <ion-item>
         <ion-label position="stacked">Correo electrónico</ion-label>
         <ion-input 
@@ -34,9 +34,9 @@
       </ion-item>
     
       <ion-button 
-        *ngIf="isLoginMode"
         expand="block"
-        type="submit"
+        type="button"
+        (click)="onLogin()"
         [disabled]="loginForm.invalid || isLoading"
         class="ion-margin-top">
         <ion-spinner *ngIf="isLoading" name="crescent"></ion-spinner>

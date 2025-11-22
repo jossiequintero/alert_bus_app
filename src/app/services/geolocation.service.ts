@@ -20,7 +20,11 @@ export class GeolocationService {
 
   async getCurrentPosition(): Promise<Location> {
     try {
-      const coordinates = await Geolocation.getCurrentPosition();
+      const coordinates = await Geolocation.getCurrentPosition({
+        enableHighAccuracy: true,
+        timeout: 30000, // 30 segundos
+        maximumAge: 60000 // 1 minuto
+      });
       console.log({coordinates});
       const location: Location = {
         latitude: coordinates.coords.latitude,
@@ -33,16 +37,26 @@ export class GeolocationService {
       return location;
     } catch (error:any) {
       console.error('Error obteniendo ubicación:', error);
+      let errorMessage = 'Error desconocido';
+      
       if (error.code === 1) {
-        console.error('🚫 Permiso denegado por el usuario.');
+        errorMessage = "Debes habilitar la ubicación para usar esta función.";
       } else if (error.code === 2) {
-        console.error('📡 Posición no disponible (sin GPS o simulador).');
+        errorMessage = '📡 Posición no disponible (sin GPS o simulador).';
       } else if (error.code === 3) {
-        console.error('⏰ Tiempo de espera agotado.');
+        errorMessage = '⏰ Tiempo de espera agotado. Intenta nuevamente.';
+      } else if (error.message) {
+        errorMessage = error.message;
       } else {
-        console.error('❌ Error desconocido:', error);
+        errorMessage = '❌ Error desconocido: ' + JSON.stringify(error);
       }
-      throw error;
+      
+      // Solo mostrar alerta si no es un error de timeout común
+      if (!errorMessage.includes('timeout') && !errorMessage.includes('time')) {
+        alert(errorMessage);
+      }
+      
+      throw new Error(errorMessage);
     }
   }
 
@@ -51,12 +65,19 @@ export class GeolocationService {
       const watchId = Geolocation.watchPosition(
         {
           enableHighAccuracy: true,
-          timeout: 10000,
-          maximumAge: 300000
+          timeout: 30000, // 30 segundos - aumentado para dar más tiempo
+          maximumAge: 60000 // 1 minuto
         },
         (position, err) => {
-          if (err || !position) {
-            observer.error(err);
+          if (err) {
+            console.error('Error en watchPosition:', err);
+            // No emitir error inmediatamente, solo loguear
+            // Esto permite que el seguimiento continúe intentando
+            return;
+          }
+          
+          if (!position) {
+            console.warn('Posición no disponible en watchPosition');
             return;
           }
 
@@ -73,7 +94,9 @@ export class GeolocationService {
       );
 
       return () => {
-        Geolocation.clearWatch({ id: watchId.toString() });
+        if (watchId) {
+          Geolocation.clearWatch({ id: watchId.toString() });
+        }
       };
     });
   }
@@ -108,4 +131,20 @@ export class GeolocationService {
     const distance = this.calculateDistance(userLat, userLon, targetLat, targetLon);
     return distance <= radius;
   }
+  async requestPermissions() {
+    try {
+      const permResult = await Geolocation.requestPermissions();
+      console.log('🔐 Permisos solicitados:', permResult);
+      
+      if (permResult.location === 'denied') {
+        throw new Error('Permisos de ubicación denegados');
+      }
+      
+      return permResult;
+    } catch (err) {
+      console.error('❌ Error solicitando permisos:', err);
+      throw err;
+    }
+  }
+  
 }

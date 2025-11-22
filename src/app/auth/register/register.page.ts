@@ -13,7 +13,7 @@ import { AuthService } from '../../services/auth.service';
 export class RegisterPage implements OnInit {
   registerForm: FormGroup;
   isRegisterMode = true;
-  isLoading = false;
+  isLoadingRegister = false;
 
   constructor(
     private formBuilder: FormBuilder,
@@ -40,29 +40,29 @@ export class RegisterPage implements OnInit {
     }
   }
 
-  async onregister() {
+  /*async onregister() {
     if (this.registerForm.valid) {
-      this.isLoading = true;
+      this.isLoadingRegister = true;
       const { email, password, role, name,lastname } = this.registerForm.value;
 
       try {
         const user = await this.authService.register(email, password,name, lastname, role).toPromise();
-        this.isLoading = false;
+        this.isLoadingRegister = false;
         
         await this.showToast(`¡Bienvenido ${user?.nombre || 'Usuario'}!`, 'success');
         this.registerForm.reset();
         this.redirectBasedOnRole();
       } catch (error) {
-        this.isLoading = false;
+        this.isLoadingRegister = false;
         await this.showToast('Error al iniciar sesión', 'danger');
       }
     }
-  }
+  }*/
 
   async onRegister() {
     if (this.registerForm.valid) {
       
-      this.isLoading = true;
+      this.isLoadingRegister = true;
       const { email, password, role, name, lastname } = this.registerForm.value;
       /*
       const name = this.registerForm.get('name')?.value;
@@ -72,12 +72,12 @@ export class RegisterPage implements OnInit {
         console.log(email, password, name, lastname, role);
         
         const user = await this.authService.register(email, password, name, lastname, role).toPromise();
-        this.isLoading = false;
+        this.isLoadingRegister = false;
         
         await this.showToast(`¡Cuenta creada exitosamente! Bienvenido ${user?.nombre || 'Usuario'}`, 'success');
         this.redirectBasedOnRole();
       } catch (error) {
-        this.isLoading = false;
+        this.isLoadingRegister = false;
         console.error('Error en registro:', error);
         const errorMessage = error instanceof Error ? error.message : 'Error al crear la cuenta';
         await this.showToast(errorMessage, 'danger');

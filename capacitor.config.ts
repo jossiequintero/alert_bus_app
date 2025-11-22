@@ -11,8 +11,15 @@ const config: CapacitorConfig = {
     },
     PushNotifications: {
       presentationOptions: ['badge', 'sound', 'alert']
+    },
+    Geolocation: {
+      permissions: [
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.ACCESS_COARSE_LOCATION"
+      ]
     }
-  }
+  },
+  
 };
 
 export default config;
