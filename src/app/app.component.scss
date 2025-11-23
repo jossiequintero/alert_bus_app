@@ -1,0 +1,18 @@
+// Estilos para el toast de notificaciones
+.notification-toast {
+  --border-radius: 12px;
+  --box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  font-size: 14px;
+  font-weight: 500;
+  white-space: pre-line; // Permite saltos de línea en el mensaje
+  
+  .toast-message {
+    padding: 12px 16px;
+    line-height: 1.5;
+  }
+  
+  .toast-button {
+    font-weight: 600;
+  }
+}
+

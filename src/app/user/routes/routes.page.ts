@@ -138,7 +138,8 @@ export class RoutesPage implements OnInit, OnDestroy {
         userLocation?.longitude
       ).subscribe({
         next: (alert) => {
-          this.showToast(`Alerta configurada para ${stop.name}. Serás notificado cuando un bus esté cerca.`, 'success');
+          // El mensaje ya viene del servidor, pero podemos mostrar uno genérico
+          this.showToast(`Alerta configurada para ${stop.name}. Verificando buses cercanos...`, 'success');
         },
         error: (error) => {
           console.error('Error configurando alerta:', error);

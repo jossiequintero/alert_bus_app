@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { PushNotifications, Token, PushNotificationSchema, ActionPerformed } from '@capacitor/push-notifications';
-import { Platform } from '@ionic/angular';
+import { Platform, ToastController } from '@ionic/angular';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { environment } from 'src/environments/environment';
@@ -28,7 +28,8 @@ export class PushNotificationService {
   constructor(
     private platform: Platform,
     private http: HttpClient,
-    private authService: AuthService
+    private authService: AuthService,
+    private toastController: ToastController
   ) {}
 
   /**
@@ -49,9 +50,9 @@ export class PushNotificationService {
       if (permissionResult.receive === 'granted') {
         // Registrar para recibir notificaciones
         await PushNotifications.register();
-        console.log('✅ Capacitor: Permisos de notificaciones concedidos');
+        await this.showToast('Permisos de notificaciones concedidos', 'success', 2000);
       } else {
-        console.warn('⚠️ Capacitor: Permisos de notificaciones denegados');
+        await this.showToast('Permisos de notificaciones denegados', 'warning', 3000);
         return;
       }
 
@@ -65,24 +66,37 @@ export class PushNotificationService {
       });
 
       // Escuchar errores de registro
-      PushNotifications.addListener('registrationError', (error: any) => {
+      PushNotifications.addListener('registrationError', async (error: any) => {
         console.error('❌ Error al registrar notificaciones push:', error);
+        await this.showToast('Error al registrar notificaciones push', 'danger', 3000);
       });
 
       // Escuchar cuando se recibe una notificación
       PushNotifications.addListener('pushNotificationReceived', (notification: PushNotificationSchema) => {
         console.log('📬 Notificación recibida:', notification);
         this.handleNotificationReceived(notification);
+        // El toast se mostrará desde app.component.ts que escucha notificationReceived$
       });
 
       // Escuchar cuando se hace clic en una notificación
-      PushNotifications.addListener('pushNotificationActionPerformed', (action: ActionPerformed) => {
+      PushNotifications.addListener('pushNotificationActionPerformed', async (action: ActionPerformed) => {
         console.log('👆 Notificación tocada:', action);
         this.handleNotificationAction(action);
+        // Mostrar toast cuando se toca la notificación
+        const notification = action.notification;
+        if (notification.title || notification.body) {
+          await this.showNotificationToast({
+            title: notification.title || 'Notificación',
+            body: notification.body || '',
+            data: notification.data,
+            id: notification.id?.toString()
+          });
+        }
       });
 
     } catch (error) {
       console.error('❌ Error al inicializar notificaciones push:', error);
+      await this.showToast('Error al inicializar notificaciones push', 'danger', 3000);
     }
   }
 
@@ -106,6 +120,7 @@ export class PushNotificationService {
 
       if (response?.success) {
         console.log('✅ Token guardado en el servidor');
+        // No mostrar toast para esto, es un proceso interno
       } else {
         console.warn('⚠️ Error al guardar token:', response?.error);
       }
@@ -173,6 +188,82 @@ export class PushNotificationService {
    */
   async removeAllListeners(): Promise<void> {
     await PushNotifications.removeAllListeners();
+  }
+
+  /**
+   * Mostrar un toast genérico
+   */
+  private async showToast(message: string, color: string = 'primary', duration: number = 3000): Promise<void> {
+    const toast = await this.toastController.create({
+      message: message,
+      duration: duration,
+      color: color,
+      position: 'top',
+      buttons: [
+        {
+          text: 'OK',
+          role: 'cancel'
+        }
+      ],
+      cssClass: 'notification-toast'
+    });
+
+    await toast.present();
+  }
+
+  /**
+   * Mostrar un toast formateado para notificaciones push
+   */
+  private async showNotificationToast(notification: PushNotificationData): Promise<void> {
+    let message = '';
+    let color = 'primary';
+    let duration = 4000;
+
+    // Formatear el mensaje según el tipo de notificación
+    if (notification.data?.type === 'bus_near_stop') {
+      // Notificación de bus cercano a una parada
+      const busNumber = notification.data?.busId ? 'el autobús' : 'un autobús';
+      const stopName = notification.data?.stopName || 'la parada';
+      const distance = notification.data?.distance 
+        ? `${Math.round(parseFloat(notification.data.distance))}m` 
+        : '';
+      
+      message = notification.body || 
+        `🚌 ${busNumber} está cerca de ${stopName}${distance ? ` (${distance})` : ''}`;
+      color = 'success';
+      duration = 5000; // Más tiempo para notificaciones importantes
+    } else if (notification.title && notification.body) {
+      // Notificación genérica con título y cuerpo
+      message = `${notification.title}\n${notification.body}`;
+      color = 'primary';
+    } else if (notification.body) {
+      // Solo cuerpo disponible
+      message = notification.body;
+      color = 'primary';
+    } else {
+      // Fallback
+      message = 'Nueva notificación recibida';
+      color = 'primary';
+    }
+
+    const toast = await this.toastController.create({
+      message: message,
+      duration: duration,
+      color: color,
+      position: 'top',
+      buttons: [
+        {
+          text: 'OK',
+          role: 'cancel',
+          handler: () => {
+            console.log('Toast cerrado');
+          }
+        }
+      ],
+      cssClass: 'notification-toast'
+    });
+
+    await toast.present();
   }
 }
 

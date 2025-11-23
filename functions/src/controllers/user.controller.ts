@@ -481,6 +481,110 @@ export async function crearAlertaParada(req: Request, res: Response) {
 
     const alertRef = await db.collection("alerts").add(alertData);
 
+    // Función auxiliar para calcular distancia
+    const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
+      const R = 6371e3; // Radio de la Tierra en metros
+      const φ1 = lat1 * Math.PI / 180;
+      const φ2 = lat2 * Math.PI / 180;
+      const Δφ = (lat2 - lat1) * Math.PI / 180;
+      const Δλ = (lon2 - lon1) * Math.PI / 180;
+
+      const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
+                Math.cos(φ1) * Math.cos(φ2) *
+                Math.sin(Δλ/2) * Math.sin(Δλ/2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+
+      return R * c; // Distancia en metros
+    };
+
+    // Verificar inmediatamente si hay buses cerca de esta parada
+    const stopLat = stop.latitud || stop.location?.latitude || 0;
+    const stopLon = stop.longitud || stop.location?.longitude || 0;
+    const RADIUS_METERS = 500; // Radio de proximidad
+    let busFoundNearby = false;
+    
+    if (stopLat && stopLon) {
+      // Buscar buses activos en esta ruta
+      const busesQuery = await db
+        .collection("buses")
+        .where("ruta_id", "==", routeId)
+        .where("estado", "==", true)
+        .get();
+
+      // Verificar cada bus para ver si está cerca
+      for (const busDoc of busesQuery.docs) {
+        const busData = busDoc.data();
+        const busLocation = busData?.currentLocation;
+
+        if (busLocation && busLocation.latitude && busLocation.longitude) {
+          // Calcular distancia entre el bus y la parada
+          const distance = calculateDistance(
+            busLocation.latitude,
+            busLocation.longitude,
+            stopLat,
+            stopLon
+          );
+
+          // Si el bus está cerca, notificar inmediatamente
+          if (distance <= RADIUS_METERS) {
+            // Verificar que el usuario es del rol User (rol_id = 1)
+            const userData = userDoc.data();
+            const userRoleId = userData?.rol_id;
+
+            if (userRoleId === 1) {
+              // Buscar token push del usuario
+              const tokenQuery = await db
+                .collection("push_tokens")
+                .where("userId", "==", userId)
+                .limit(1)
+                .get();
+
+              if (!tokenQuery.empty) {
+                const tokenData = tokenQuery.docs[0].data();
+                const pushToken = tokenData.token;
+
+                try {
+                  const message = {
+                    notification: {
+                      title: "🚌 Autobús Cercano",
+                      body: `El autobús ${busData?.numero || 'está'} está cerca de la parada: ${stopName} (${Math.round(distance)}m)`,
+                    },
+                    data: {
+                      type: "bus_near_stop",
+                      alertId: alertRef.id,
+                      busId: busDoc.id,
+                      routeId,
+                      stopId,
+                      stopName,
+                      distance: distance.toString(),
+                    },
+                    token: pushToken,
+                  };
+
+                  await admin.messaging().send(message);
+                  console.log(`Notificación inmediata enviada al usuario ${userId} - Bus cerca de parada ${stopName}`);
+
+                  // Marcar alerta como notificada
+                  await alertRef.update({
+                    isNotified: true,
+                    busId: busDoc.id,
+                    notifiedAt: admin.firestore.FieldValue.serverTimestamp(),
+                    distance,
+                  });
+                  
+                  busFoundNearby = true;
+                  // Salir del loop ya que encontramos un bus cerca y notificamos
+                  break;
+                } catch (pushError: any) {
+                  console.error(`Error enviando notificación push al usuario ${userId}:`, pushError);
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
     const alertDoc = await alertRef.get();
     const alertResult = {
       id: alertDoc.id,
@@ -488,10 +592,15 @@ export async function crearAlertaParada(req: Request, res: Response) {
       createdAt: alertDoc.data()?.createdAt?.toDate ? alertDoc.data()?.createdAt.toDate() : alertDoc.data()?.createdAt,
     };
 
+    const responseMessage = busFoundNearby
+      ? "Alerta creada exitosamente. ¡Un autobús está cerca de la parada! Has sido notificado."
+      : "Alerta creada exitosamente. Serás notificado cuando un bus esté cerca de la parada.";
+
     return res.status(201).json({
       success: true,
-      message: "Alerta creada exitosamente. Serás notificado cuando un bus esté cerca de la parada.",
+      message: responseMessage,
       data: alertResult,
+      busFoundNearby: busFoundNearby
     });
   } catch (error: any) {
     console.error("Error al crear alerta de parada:", error);
@@ -617,6 +726,24 @@ async function verificarAlertasParadasDirecto(
       if (distance <= RADIUS_METERS) {
         const userId = alertData.userId;
 
+        // Verificar que el usuario es del rol User (rol_id = 1), no Driver
+        const userDoc = await db.collection("usuarios").doc(userId).get();
+        
+        if (!userDoc.exists) {
+          console.log(`Usuario ${userId} no encontrado, saltando notificación`);
+          continue;
+        }
+
+        const userData = userDoc.data();
+        const userRoleId = userData?.rol_id;
+
+        // Solo enviar notificación a usuarios con rol_id = 1 (User/Pasajero)
+        // No enviar a conductores (rol_id = 2) ni admins (rol_id = 3)
+        if (userRoleId !== 1) {
+          console.log(`Usuario ${userId} tiene rol_id ${userRoleId}, no es User. Saltando notificación.`);
+          continue;
+        }
+
         // Buscar token push del usuario
         const tokenQuery = await db
           .collection("push_tokens")
@@ -648,7 +775,7 @@ async function verificarAlertasParadasDirecto(
             };
 
             await admin.messaging().send(message);
-            console.log(`Notificación enviada al usuario ${userId} - Bus cerca de parada ${alertData.stopName}`);
+            console.log(`Notificación enviada al usuario ${userId} (rol: User) - Bus cerca de parada ${alertData.stopName}`);
 
             // Marcar alerta como notificada
             await alertDoc.ref.update({

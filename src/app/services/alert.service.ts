@@ -15,6 +15,7 @@ interface ApiResponse<T> {
   data: T;
   message?: string;
   error?: string;
+  busFoundNearby?: boolean;
 }
 
 @Injectable({
@@ -287,6 +288,13 @@ export class AlertService {
             // Agregar a la lista local
             const alerts = this.alertsSubject.value;
             this.alertsSubject.next([...alerts, alert]);
+            
+            // Si se encontró un bus cerca, la notificación ya fue enviada desde el servidor
+            // El mensaje de respuesta indica si se encontró un bus
+            if (response.busFoundNearby) {
+              console.log('Bus encontrado cerca inmediatamente - notificación enviada');
+            }
+            
             observer.next(alert);
             observer.complete();
           } else {

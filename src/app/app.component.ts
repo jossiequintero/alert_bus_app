@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { PushNotificationService } from './services/push-notification.service';
+import { ToastController } from '@ionic/angular';
+import { PushNotificationService, PushNotificationData } from './services/push-notification.service';
 
 @Component({
   selector: 'app-root',
@@ -8,7 +9,10 @@ import { PushNotificationService } from './services/push-notification.service';
   standalone: false,
 })
 export class AppComponent implements OnInit {
-  constructor(private pushNotificationService: PushNotificationService) {}
+  constructor(
+    private pushNotificationService: PushNotificationService,
+    private toastController: ToastController
+  ) {}
 
   async ngOnInit() {
     // Inicializar notificaciones push cuando la app se inicia
@@ -18,8 +22,63 @@ export class AppComponent implements OnInit {
     this.pushNotificationService.getNotificationsObservable().subscribe(notification => {
       if (notification) {
         console.log('📬 Nueva notificación recibida:', notification);
-        // Aquí puedes mostrar un toast o actualizar la UI
+        this.showNotificationToast(notification);
       }
     });
+  }
+
+  /**
+   * Mostrar un toast amigable para las notificaciones recibidas
+   */
+  private async showNotificationToast(notification: PushNotificationData) {
+    let message = '';
+    let color = 'primary';
+    let duration = 4000;
+
+    // Formatear el mensaje según el tipo de notificación
+    if (notification.data?.type === 'bus_near_stop') {
+      // Notificación de bus cercano a una parada
+      const busNumber = notification.data?.busId ? 'el autobús' : 'un autobús';
+      const stopName = notification.data?.stopName || 'la parada';
+      const distance = notification.data?.distance 
+        ? `${Math.round(parseFloat(notification.data.distance))}m` 
+        : '';
+      
+      message = notification.body || 
+        `🚌 ${busNumber} está cerca de ${stopName}${distance ? ` (${distance})` : ''}`;
+      color = 'success';
+      duration = 5000; // Más tiempo para notificaciones importantes
+    } else if (notification.title && notification.body) {
+      // Notificación genérica con título y cuerpo
+      message = `${notification.title}\n${notification.body}`;
+      color = 'primary';
+    } else if (notification.body) {
+      // Solo cuerpo disponible
+      message = notification.body;
+      color = 'primary';
+    } else {
+      // Fallback
+      message = 'Nueva notificación recibida';
+      color = 'primary';
+    }
+
+    const toast = await this.toastController.create({
+      message: message,
+      duration: duration,
+      color: color,
+      position: 'top',
+      buttons: [
+        {
+          text: 'OK',
+          role: 'cancel',
+          handler: () => {
+            console.log('Toast cerrado');
+          }
+        }
+      ],
+      cssClass: 'notification-toast'
+    });
+
+    await toast.present();
   }
 }

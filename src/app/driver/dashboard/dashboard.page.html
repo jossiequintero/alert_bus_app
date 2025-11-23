@@ -18,7 +18,7 @@
   
   <div class="welcome-section">
     <h1>¡Hola, {{ currentUser?.nombre }}!</h1>
-    <p>Gestiona tu autobús y actualiza tu ubicación en Guayaquil</p>
+    <p>Gestiona tu autobús y actualiza tu ubicación</p>
   </div>
 
   <div class="bus-status" *ngIf="currentBus">
@@ -67,13 +67,7 @@
             height="100%"
             width="100%"
             [zoom]="zoom"
-            [center]="center"
-            [options]="{
-              mapTypeId: 'roadmap',
-              zoomControl: true,
-              scrollwheel: true,
-              disableDoubleClickZoom: false
-            }">
+            [center]="center">
             <map-marker
               #marker="mapMarker"
               [position]="markerPosition"

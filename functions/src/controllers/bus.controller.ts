@@ -422,6 +422,24 @@ async function verificarAlertasParadasInterno(
       if (distance <= RADIUS_METERS) {
         const userId = alertData.userId;
 
+        // Verificar que el usuario es del rol User (rol_id = 1), no Driver
+        const userDoc = await db.collection("usuarios").doc(userId).get();
+        
+        if (!userDoc.exists) {
+          console.log(`Usuario ${userId} no encontrado, saltando notificación`);
+          continue;
+        }
+
+        const userData = userDoc.data();
+        const userRoleId = userData?.rol_id;
+
+        // Solo enviar notificación a usuarios con rol_id = 1 (User/Pasajero)
+        // No enviar a conductores (rol_id = 2) ni admins (rol_id = 3)
+        if (userRoleId !== 1) {
+          console.log(`Usuario ${userId} tiene rol_id ${userRoleId}, no es User. Saltando notificación.`);
+          continue;
+        }
+
         // Buscar token push del usuario
         const tokenQuery = await db
           .collection("push_tokens")
@@ -453,7 +471,7 @@ async function verificarAlertasParadasInterno(
             };
 
             await admin.messaging().send(message);
-            console.log(`Notificación enviada al usuario ${userId} - Bus cerca de parada ${alertData.stopName}`);
+            console.log(`Notificación enviada al usuario ${userId} (rol: User) - Bus cerca de parada ${alertData.stopName}`);
 
             // Marcar alerta como notificada
             await alertDoc.ref.update({

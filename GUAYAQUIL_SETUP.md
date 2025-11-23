@@ -2,7 +2,7 @@
 
 ## 🚌 AlertBus Guayaquil - Configuración Local
 
-Esta aplicación está específicamente configurada para funcionar en Guayaquil, Ecuador con datos reales de la ciudad.
+Esta aplicación está específicamente configurada para funcionar Ecuador con datos reales de la ciudad.
 
 ### 📍 Ubicaciones Configuradas
 
