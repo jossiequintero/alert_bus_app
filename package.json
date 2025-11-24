@@ -12,7 +12,9 @@
     "test": "ng test",
     "lint": "ng lint",
     "device": "ionic build && ionic capacitor run android -l --external --target=YXCI5XRCEMLBKJZD",
-    "devicew": "ionic build && ionic capacitor run android -l --external --target=adb-YXCI5XRCEMLBKJZD-pxVL6F._adb-tls-connect._tcp"
+    "devicew": "ionic build && ionic capacitor run android -l --external --target=adb-YXCI5XRCEMLBKJZD-pxVL6F._adb-tls-connect._tcp",
+    "android": "ionic build && ionic cap sync && ionic cap copy && ionic cap open android"
+
   },
   "private": true,
   "dependencies": {

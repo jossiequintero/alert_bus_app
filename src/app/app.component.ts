@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ToastController } from '@ionic/angular';
 import { PushNotificationService, PushNotificationData } from './services/push-notification.service';
+import { AuthService } from './services/auth.service';
 
 @Component({
   selector: 'app-root',
@@ -11,12 +12,21 @@ import { PushNotificationService, PushNotificationData } from './services/push-n
 export class AppComponent implements OnInit {
   constructor(
     private pushNotificationService: PushNotificationService,
-    private toastController: ToastController
+    private toastController: ToastController,
+    private authService: AuthService
   ) {}
 
   async ngOnInit() {
-    // Inicializar notificaciones push cuando la app se inicia
-    await this.pushNotificationService.initialize();
+    // Si el usuario ya está autenticado (sesión guardada), inicializar push notifications
+    const currentUser = this.authService.getCurrentUser();
+    if (currentUser && (currentUser.roleId === 1 || currentUser.roleId === 2)) {
+      try {
+        await this.pushNotificationService.initialize();
+        console.log('Push notifications inicializadas para usuario autenticado');
+      } catch (error) {
+        console.error('Error inicializando push notifications:', error);
+      }
+    }
     
     // Suscribirse a las notificaciones recibidas
     this.pushNotificationService.getNotificationsObservable().subscribe(notification => {

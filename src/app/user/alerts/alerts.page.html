@@ -27,33 +27,43 @@
         </ion-toggle>
       </ion-item>
 
-      <ion-item>
-        <ion-label position="stacked">Radio de Proximidad (metros)</ion-label>
-        <ion-range 
-          min="100" 
-          max="1000" 
-          step="50"
-          [(ngModel)]="alertSettings.proximityRadius"
-          (ionChange)="updateAlertSettings()">
-          <ion-label slot="start">100m</ion-label>
-          <ion-label slot="end">1000m</ion-label>
-        </ion-range>
-        <ion-label slot="end">{{ alertSettings.proximityRadius }}m</ion-label>
-      </ion-item>
+      <div class="range-container">
+        <div class="range-header">
+          <ion-label class="range-title">Radio de Proximidad</ion-label>
+          <ion-label class="range-value">{{ alertSettings.proximityRadius }}m</ion-label>
+        </div>
+        <div class="range-wrapper">
+          <ion-range 
+            min="100" 
+            max="1000" 
+            step="50"
+            [(ngModel)]="alertSettings.proximityRadius"
+            (ionChange)="updateAlertSettings()"
+            class="custom-range">
+            <ion-label slot="start" class="range-min">100m</ion-label>
+            <ion-label slot="end" class="range-max">1000m</ion-label>
+          </ion-range>
+        </div>
+      </div>
 
-      <ion-item>
-        <ion-label position="stacked">Tiempo de Anticipación (minutos)</ion-label>
-        <ion-range 
-          min="1" 
-          max="15" 
-          step="1"
-          [(ngModel)]="alertSettings.advanceTime"
-          (ionChange)="updateAlertSettings()">
-          <ion-label slot="start">1min</ion-label>
-          <ion-label slot="end">15min</ion-label>
-        </ion-range>
-        <ion-label slot="end">{{ alertSettings.advanceTime }}min</ion-label>
-      </ion-item>
+      <div class="range-container">
+        <div class="range-header">
+          <ion-label class="range-title">Tiempo de Anticipación</ion-label>
+          <ion-label class="range-value">{{ alertSettings.advanceTime }}min</ion-label>
+        </div>
+        <div class="range-wrapper">
+          <ion-range 
+            min="1" 
+            max="15" 
+            step="1"
+            [(ngModel)]="alertSettings.advanceTime"
+            (ionChange)="updateAlertSettings()"
+            class="custom-range">
+            <ion-label slot="start" class="range-min">1min</ion-label>
+            <ion-label slot="end" class="range-max">15min</ion-label>
+          </ion-range>
+        </div>
+      </div>
 
       <ion-item>
         <ion-label>Sonido</ion-label>

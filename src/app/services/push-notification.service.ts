@@ -59,7 +59,7 @@ export class PushNotificationService {
       // Escuchar cuando se registra el token
       PushNotifications.addListener('registration', (token: Token) => {
         
-        console.log('📱 Token de notificaciones push:', token.value);
+        //alert('📱 Token de notificaciones push:'+ token.value);
         // alert('Token: ' + token.value);
         this.tokenSubject.next(token.value);
         this.saveTokenToServer(token.value);
@@ -119,7 +119,7 @@ export class PushNotificationService {
       }).toPromise();
 
       if (response?.success) {
-        console.log('✅ Token guardado en el servidor');
+        console.log('✅ Token guardado en el servidor exitosamente');
         // No mostrar toast para esto, es un proceso interno
       } else {
         console.warn('⚠️ Error al guardar token:', response?.error);

@@ -3,6 +3,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ToastController, LoadingController } from '@ionic/angular';
 import { AuthService } from '../../services/auth.service';
+import { PushNotificationService } from '../../services/push-notification.service';
 
 @Component({
   selector: 'app-login',
@@ -20,7 +21,8 @@ export class LoginPage implements OnInit {
     private authService: AuthService,
     private router: Router,
     private toastController: ToastController,
-    private loadingController: LoadingController
+    private loadingController: LoadingController,
+    private pushNotificationService: PushNotificationService
   ) {
     this.loginForm = this.formBuilder.group({
       email: ['', [Validators.required, Validators.email]],
@@ -43,6 +45,19 @@ export class LoginPage implements OnInit {
       try {
         const user = await this.authService.login(email, password).toPromise();
         await this.showToast(`¡Bienvenido ${user?.nombre || 'Usuario'}!`, 'success');
+        
+        // Inicializar push notifications después del login exitoso
+        // Solo para usuarios (rol_id = 1) y conductores (rol_id = 2)
+        if (user && (user.roleId === 1 || user.roleId === 2)) {
+          try {
+            await this.pushNotificationService.initialize();
+            console.log('Push notifications inicializadas después del login');
+          } catch (pushError) {
+            console.error('Error inicializando push notifications:', pushError);
+            // No mostrar error al usuario, es un proceso en segundo plano
+          }
+        }
+        
         this.isLoading = false;
         this.loginForm.reset();
         this.redirectBasedOnRole();
