@@ -497,11 +497,33 @@ export async function crearAlertaParada(req: Request, res: Response) {
       return R * c; // Distancia en metros
     };
 
+    // Función para obtener el radio de proximidad del usuario
+    const getUserProximityRadius = async (userId: string): Promise<number> => {
+      try {
+        const settingsQuery = await db
+          .collection("alert_settings")
+          .where("userId", "==", userId)
+          .limit(1)
+          .get();
+
+        if (!settingsQuery.empty) {
+          const settingsData = settingsQuery.docs[0].data();
+          return settingsData.proximityRadius || 500;
+        }
+        return 500; // Valor por defecto
+      } catch (error) {
+        console.error(`Error obteniendo configuración de alertas para usuario ${userId}:`, error);
+        return 500; // Valor por defecto en caso de error
+      }
+    };
+
     // Verificar inmediatamente si hay buses cerca de esta parada
     const stopLat = stop.latitud || stop.location?.latitude || 0;
     const stopLon = stop.longitud || stop.location?.longitude || 0;
-    const RADIUS_METERS = 500; // Radio de proximidad
     let busFoundNearby = false;
+    
+    // Obtener el radio de proximidad configurado por el usuario
+    const userRadius = await getUserProximityRadius(userId);
     
     if (stopLat && stopLon) {
       // Buscar buses activos en esta ruta
@@ -525,8 +547,8 @@ export async function crearAlertaParada(req: Request, res: Response) {
             stopLon
           );
 
-          // Si el bus está cerca, notificar inmediatamente
-          if (distance <= RADIUS_METERS) {
+          // Si el bus está dentro del radio de proximidad del usuario, notificar inmediatamente
+          if (distance <= userRadius) {
             // Verificar que el usuario es del rol User (rol_id = 1)
             const userData = userDoc.data();
             const userRoleId = userData?.rol_id;
@@ -689,7 +711,7 @@ async function verificarAlertasParadasDirecto(
       .get();
 
     let notifiedCount = 0;
-    const RADIUS_METERS = 500; // Radio de proximidad en metros
+    const DEFAULT_RADIUS_METERS = 500; // Radio de proximidad por defecto en metros
 
     // Función para calcular distancia entre dos puntos
     const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
@@ -707,6 +729,26 @@ async function verificarAlertasParadasDirecto(
       return R * c; // Distancia en metros
     };
 
+    // Función para obtener el radio de proximidad del usuario
+    const getUserProximityRadius = async (userId: string): Promise<number> => {
+      try {
+        const settingsQuery = await db
+          .collection("alert_settings")
+          .where("userId", "==", userId)
+          .limit(1)
+          .get();
+
+        if (!settingsQuery.empty) {
+          const settingsData = settingsQuery.docs[0].data();
+          return settingsData.proximityRadius || DEFAULT_RADIUS_METERS;
+        }
+        return DEFAULT_RADIUS_METERS;
+      } catch (error) {
+        console.error(`Error obteniendo configuración de alertas para usuario ${userId}:`, error);
+        return DEFAULT_RADIUS_METERS;
+      }
+    };
+
     // Obtener información del bus
     const busDoc = await db.collection("buses").doc(busId).get();
     const busData = busDoc.data();
@@ -722,9 +764,13 @@ async function verificarAlertasParadasDirecto(
       // Calcular distancia entre el bus y la parada
       const distance = calculateDistance(busLatitude, busLongitude, stopLat, stopLon);
 
-      // Si el bus está dentro del radio de proximidad
-      if (distance <= RADIUS_METERS) {
-        const userId = alertData.userId;
+      const userId = alertData.userId;
+      
+      // Obtener el radio de proximidad configurado por el usuario
+      const userRadius = await getUserProximityRadius(userId);
+
+      // Si el bus está dentro del radio de proximidad del usuario
+      if (distance <= userRadius) {
 
         // Verificar que el usuario es del rol User (rol_id = 1), no Driver
         const userDoc = await db.collection("usuarios").doc(userId).get();
