@@ -231,7 +231,7 @@ export async function getAppConfig(): Promise<any> {
   if (!configDoc.exists) {
     // Crear configuración por defecto
     const defaultConfig = {
-      appName: 'AlertBus Guayaquil',
+      appName: 'AlertBus Milagro',
       version: '1.0.0',
       maintenanceMode: false,
       maxAlertsPerUser: 10,

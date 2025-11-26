@@ -38,6 +38,7 @@ export class LoginPage implements OnInit {
   }
 
   async onLogin() {
+    debugger
     if (this.loginForm.valid) {
       this.isLoading = true;
       const { email, password } = this.loginForm.value;
@@ -53,6 +54,7 @@ export class LoginPage implements OnInit {
             await this.pushNotificationService.initialize();
             console.log('Push notifications inicializadas después del login');
           } catch (pushError) {
+            await this.showToast('Error al inicializar push notifications', 'danger');
             console.error('Error inicializando push notifications:', pushError);
             // No mostrar error al usuario, es un proceso en segundo plano
           }
@@ -63,6 +65,8 @@ export class LoginPage implements OnInit {
         this.redirectBasedOnRole();
       } catch (error) {
         await this.showToast('Error al iniciar sesión', 'danger');
+        this.isLoading = false;
+        this.loginForm.reset();
       }
       finally {
         this.isLoading = false;

@@ -1,9 +1,9 @@
 {
-  "name": "alertbus-guayaquil",
+  "name": "alertbus",
   "version": "1.0.0",
   "author": "AlertBus Team",
-  "description": "Aplicación de alertas de autobús para Guayaquil, Ecuador",
-  "homepage": "https://github.com/alertbus/guayaquil",
+  "description": "Aplicación de alertas de autobús para Milagro, Ecuador",
+  "homepage": "https://github.com/alertbus/",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",

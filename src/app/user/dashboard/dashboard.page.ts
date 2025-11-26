@@ -280,7 +280,7 @@ export class DashboardPage implements OnInit, OnDestroy {
       
       // Si es un error de timeout, usar ubicación por defecto
       if (errorMessage.includes('timeout') || errorMessage.includes('time')) {
-        console.warn('Usando ubicación por defecto (Guayaquil)');
+        console.warn('Usando ubicación por defecto (Milagro)');
         this.center = { lat: -2.1894, lng: -79.8890 };
         this.markerPosition = { lat: -2.1894, lng: -79.8890 };
       }

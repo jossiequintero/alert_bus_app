@@ -1,14 +1,14 @@
-# Changelog - Actualización a Guayaquil, Ecuador
+# Changelog - Actualización , Ecuador
 
-## 🚌 Versión 1.0.0 - Guayaquil Edition
+## 🚌 Versión 1.0.0 - Edition
 
 ### ✅ Cambios Realizados
 
 #### **📍 Ubicación y Coordenadas**
-- **Ubicación por defecto**: Ciudad de  Guayaquil, Ecuador
-- **Coordenadas centrales**: -2.1894, -79.8890 (Centro de Guayaquil)
-- **Zoom por defecto**: 13 (optimizado para Guayaquil)
-- **Límites geográficos**: Configurados para el área metropolitana de Guayaquil
+- **Ubicación por defecto**: Ciudad de  Milagro, Ecuador
+- **Coordenadas centrales**: -2.1894, -79.8890 (Centro de Milagro)
+- **Zoom por defecto**: 13 (optimizado para Milagro)
+- **Límites geográficos**: Configurados para el área metropolitana de Milagro
 
 #### **🗺️ Rutas de Autobús Actualizadas**
 
@@ -20,7 +20,7 @@
 **Ruta 2: Norte - Sur**
 - Terminal Terrestre (-2.1400, -79.9200)
 - Hospital Luis Vernaza (-2.1900, -79.8900)
-- Universidad de Guayaquil (-2.2200, -79.8700)
+- Universidad de Millagro (-2.2200, -79.8700)
 
 **Ruta 3: Malecón - Urdesa** (Nueva)
 - Malecón 2000 (-2.1960, -79.8800)
@@ -33,38 +33,38 @@
 - **G-103**: Ruta Malecón - Urdesa (Nuevo)
 
 #### **🏷️ Títulos y Textos**
-- **Título de la aplicación**: "AlertBus Guayaquil"
+- **Título de la aplicación**: "AlertBus "
 - **Páginas actualizadas**:
   - Login: "AlertBus - Iniciar Sesión"
-  - Dashboard Usuario: "Dashboard Usuario - Guayaquil"
-  - Dashboard Chofer: "Dashboard Chofer - Guayaquil"
-  - Rutas: "Rutas de Autobús - Guayaquil"
-  - Alertas: "Mis Alertas - Guayaquil"
+  - Dashboard Usuario: "Dashboard Usuario - "
+  - Dashboard Chofer: "Dashboard Chofer - "
+  - Rutas: "Rutas de Autobús - "
+  - Alertas: "Mis Alertas - "
 
 #### **📝 Descripciones Actualizadas**
-- Todas las descripciones ahora mencionan Guayaquil
+- Todas las descripciones ahora mencionan 
 - Textos de ayuda específicos para la ciudad
 - Mensajes de bienvenida localizados
 
 #### **⚙️ Configuración Técnica**
 
 **Archivos de Configuración:**
-- `src/environments/google-maps.config.ts`: Configuración específica para Guayaquil
-- `src/environments/environment.example.ts`: Variables de entorno con ubicación de Guayaquil
+- `src/environments/google-maps.config.ts`: Configuración específica para 
+- `src/environments/environment.example.ts`: Variables de entorno con ubicación de 
 - `capacitor.config.ts`: Configuración de Capacitor actualizada
 - `package.json`: Metadatos del proyecto actualizados
 
 **Servicios Actualizados:**
-- `BusService`: Datos de ejemplo con rutas reales de Guayaquil
+- `BusService`: Datos de ejemplo con rutas reales de 
 - `GeolocationService`: Configuración optimizada para Ecuador
-- `AlertService`: Mensajes localizados para Guayaquil
+- `AlertService`: Mensajes localizados para 
 
 #### **📚 Documentación**
-- `README.md`: Actualizado con información de Guayaquil
-- `GUAYAQUIL_SETUP.md`: Guía específica de configuración
-- `CHANGELOG_GUAYAQUIL.md`: Este archivo de cambios
+- `README.md`: Actualizado con información de 
+- `_SETUP.md`: Guía específica de configuración
+- `CHANGELOG_.md`: Este archivo de cambios
 
-### 🎯 Características Específicas de Guayaquil
+### 🎯 Características Específicas de 
 
 #### **Lugares Reales Incluidos**
 - **Parque Centenario**: Centro histórico
@@ -72,13 +72,13 @@
 - **Mall del Sol**: Centro comercial más grande
 - **Terminal Terrestre**: Terminal de buses
 - **Hospital Luis Vernaza**: Hospital principal
-- **Universidad de Guayaquil**: Universidad pública
+- **Universidad de **: Universidad pública
 - **Malecón 2000**: Paseo turístico
 - **Plaza Lagos**: Centro comercial norte
 - **Urdesa**: Zona comercial y residencial
 
 #### **Numeración Local**
-- Autobuses con prefijo "G-" (Guayaquil)
+- Autobuses con prefijo "G-" ()
 - Rutas numeradas según sistema local
 - Paradas con nombres reconocibles
 
@@ -109,7 +109,7 @@
 
 3. **Probar funcionalidades**:
    - Registrarse como usuario/chofer
-   - Explorar rutas de Guayaquil
+   - Explorar rutas de 
    - Configurar alertas de proximidad
    - Ver autobuses en tiempo real
 
@@ -124,7 +124,7 @@
 
 ### 🎉 Resultado Final
 
-La aplicación AlertBus ahora está completamente configurada para Guayaquil, Ecuador, con:
+La aplicación AlertBus ahora está completamente configurada para , Ecuador, con:
 - ✅ Ubicaciones reales de la ciudad
 - ✅ Rutas de autobús auténticas
 - ✅ Paradas con nombres reconocibles
